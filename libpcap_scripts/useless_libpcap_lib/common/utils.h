@@ -9,6 +9,8 @@
 #include <map>
 #include <vector>
 
+#include <pcap.h>
+
 struct PktType {
     bool udp = false;
     bool tcp = false;
@@ -80,5 +82,9 @@ class MapVec {
 };
 
 timeval timeval_minus(const timeval &a, const timeval &b);
+
+PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content);
+
+void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_t capture_length, pcap_pkthdr *pkt_header, u_char *pkt_content);
 
 #endif
