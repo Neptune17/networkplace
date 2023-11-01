@@ -30,24 +30,29 @@ void BandwidthMonitor::append_packet_(PktInfo pkt_info){
 void BandwidthMonitor::print_feature_(FiveTuple flow_id){
     char dst_ip_str[INET_ADDRSTRLEN];
     
-    std::cout << "{";
     std::cout << "\"interval_time\":";
     std::cout << "\"" << interval_time_.tv_sec << "." << interval_time_.tv_usec << "\"";
-    std::cout << "},";
+    std::cout << ",";
 
     std::cout << "\"pps\":";
     std::cout << "{";
     for(auto it = packet_count_.begin(); it != packet_count_.end(); it ++){
+        if(it != packet_count_.begin()){
+            std::cout << ",";
+        }
         inet_ntop(AF_INET, &(it->first), dst_ip_str, INET_ADDRSTRLEN);
-        std::cout << "\"" << dst_ip_str << "\"" << ":" << calculate_per_second_rate_(it->second, interval_time_) << ",";
+        std::cout << "\"" << dst_ip_str << "\"" << ":" << calculate_per_second_rate_(it->second, interval_time_);
     }
     std::cout << "},";
     
     std::cout << "\"bps\":";
     std::cout << "{";
     for(auto it = packet_bytes_.begin(); it != packet_bytes_.end(); it ++){
+        if(it != packet_bytes_.begin()){
+            std::cout << ",";
+        }
         inet_ntop(AF_INET, &(it->first), dst_ip_str, INET_ADDRSTRLEN);
-        std::cout << "\"" << dst_ip_str << "\"" << ":" << (calculate_per_second_rate_(it->second, interval_time_) * 8) << ",";
+        std::cout << "\"" << dst_ip_str << "\"" << ":" << (calculate_per_second_rate_(it->second, interval_time_) * 8);
     }
     std::cout << "}";
     

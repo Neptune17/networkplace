@@ -20,12 +20,12 @@ int main(){
     // traffic_generator.add_strategy(new RandomAllStrategy());
     // traffic_mixer.add_traffic_generator(&traffic_generator);
 
-    PcapWriter pcap_writer("test.pcap");
+    PcapWriter pcap_writer("result/test.pcap");
 
     std::vector<AbstractFeatureExtractor*> feature_extractors;
     feature_extractors.push_back(new BandwidthMonitor());
 
-    uint32_t pkt_num = 10000000;
+    uint32_t pkt_num = 100000000;
     while(pkt_num --){
         PktInfo pkt_info = traffic_mixer.get_current_pkt_info();
         pcap_writer.dump_pkt(pkt_info);

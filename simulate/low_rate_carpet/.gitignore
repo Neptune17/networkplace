@@ -1,4 +1,5 @@
 objs/*
 deps/*
 main
-test.pcap
+result/*
+__pycache__/*
