@@ -4,7 +4,7 @@ OBJS_DIR=objs
 DEPS_DIR=deps
 USELESS_LIBPCAP_LIB_DIR=../useless_libpcap_lib
 USELESS_LIBPCAP_LIB_DIRS=$(patsubst $(USELESS_LIBPCAP_LIB_DIR),,$(shell find $(USELESS_LIBPCAP_LIB_DIR) -maxdepth 1 -type d))
-USELESS_LIBPCAP_LIB_OBJS=$(foreach dir,$(USELESS_LIBPCAP_LIB_DIRS),$(shell cat $(dir)/objs.txt))
+USELESS_LIBPCAP_LIB_OBJS=$(foreach dir,$(USELESS_LIBPCAP_LIB_DIRS),$(shell if [ -f $(dir)/objs.txt ]; then cat $(dir)/objs.txt; fi))
 
 LIBPCAPFLAGS = -lpcap
 INCLUDE=$(addprefix -I ,$(USELESS_LIBPCAP_LIB_DIRS))
@@ -31,11 +31,12 @@ $(USELESS_LIBPCAP_LIB_DIRS): ECHO
 	make -C $@
 ECHO:
 	@echo $(USELESS_LIBPCAP_LIB_DIRS)
--include $(DEPS)
 
 .PHONY: clean
 clean:
 	-rm -r $(OBJS_DIR) $(DEPS_DIR) $(TARGET)
+
+-include $(DEPS)
 
 # OBJS_DIR=objs
 

@@ -8,10 +8,21 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 
+const PktInfo pkt_info_template::syn_tcp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, PktType(false, true, false, true, false, false, false), timeval());
+const PktInfo pkt_info_template::udp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, PktType(true, false, false, false, false, false, false), timeval());
+const PktInfo pkt_info_template::icmp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, PktType(false, false, true, false, false, false, false), timeval());
+
 timeval timeval_minus(const timeval &a, const timeval &b){
     timeval ans;
     ans.tv_sec = a.tv_sec - b.tv_sec;
     ans.tv_usec = a.tv_usec - b.tv_usec;
+    return ans;
+}
+
+timeval timeval_plus(const timeval &a, const timeval &b){
+    timeval ans;
+    ans.tv_sec = a.tv_sec + b.tv_sec;
+    ans.tv_usec = a.tv_usec + b.tv_usec;
     return ans;
 }
 
@@ -61,14 +72,14 @@ PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content){
 
 void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_t capture_length, pcap_pkthdr *pkt_header, u_char *pkt_content){
     memcpy(pkt_content, pkt_content_template, capture_length);
+    struct ip *ip_header = (struct ip*)(pkt_content + sizeof(struct ether_header));
+    ip_header->ip_src.s_addr = pkt_info.flow_id.src_ip;
+    ip_header->ip_dst.s_addr = pkt_info.flow_id.dst_ip;
+    ip_header->ip_len = htons(pkt_info.pkt_len);
     if(pkt_info.pkt_type.tcp){
-        struct ip *ip_header = (struct ip*)(pkt_content + sizeof(struct ether_header));
-        ip_header->ip_src.s_addr = pkt_info.flow_id.src_ip;
-        ip_header->ip_dst.s_addr = pkt_info.flow_id.dst_ip;
         struct tcphdr *tcp_header = (struct tcphdr*)(pkt_content + sizeof(struct ether_header) + sizeof(struct ip));
         tcp_header->th_sport = htons(pkt_info.flow_id.src_port);
         tcp_header->th_dport = htons(pkt_info.flow_id.dst_port);
-        ip_header->ip_len = htons(pkt_info.pkt_len);
 
         if(pkt_info.pkt_type.tcp_syn){
             tcp_header->th_flags |= TH_SYN;
@@ -82,6 +93,11 @@ void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_
         if(pkt_info.pkt_type.tcp_ack){
             tcp_header->th_flags |= TH_ACK;
         }
+    }
+    else if(pkt_info.pkt_type.udp){
+        struct udphdr *udp_header = (struct udphdr*)(pkt_content + sizeof(struct ether_header) + sizeof(struct ip));
+        udp_header->uh_sport = htons(pkt_info.flow_id.src_port);
+        udp_header->uh_dport = htons(pkt_info.flow_id.dst_port);
     }
 
     pkt_header->ts.tv_sec = pkt_info.pkt_time.tv_sec;

@@ -18,7 +18,6 @@ class PcapReader: public AbstractTrafficGenerator {
     void close() override;
 
   private:
-
     pcap_t *pcap_descr_;
     timeval start_time_;
     PktInfo curr_pkt_info_;

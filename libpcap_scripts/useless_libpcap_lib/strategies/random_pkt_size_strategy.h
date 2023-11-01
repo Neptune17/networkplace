@@ -7,7 +7,14 @@
 
 class RandomPktSizeStrategy: public AbstractStrategy{
   public:
+    RandomPktSizeStrategy();
+    RandomPktSizeStrategy(uint32_t min_size, uint32_t max_size);
+
     PktInfo apply(PktInfo pkt_info) override;
+
+  private:
+    uint32_t min_size_;
+    uint32_t max_size_;
 };
 
 #endif

@@ -6,6 +6,10 @@ void TrafficGenerator::add_strategy(AbstractStrategy* strategy) {
     strategies_.push_back(strategy);
 }
 
+PktInfo TrafficGenerator::get_current_pkt_info() {
+    return curr_pkt_info_;
+}
+
 timeval TrafficGenerator::generate_next() {
     timeval prev_time = curr_pkt_info_.pkt_time;
     curr_pkt_info_ = template_pkt_info_;
@@ -14,10 +18,6 @@ timeval TrafficGenerator::generate_next() {
         curr_pkt_info_ = strategy->apply(curr_pkt_info_);
     }
     return curr_pkt_info_.pkt_time;
-}
-
-PktInfo TrafficGenerator::get_current_pkt_info() {
-    return curr_pkt_info_;
 }
 
 bool TrafficGenerator::is_end() {

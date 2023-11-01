@@ -20,6 +20,17 @@ struct PktType {
     bool tcp_rst = false;
     bool tcp_ack = false;
 
+    PktType(){}
+    PktType(bool udp, bool tcp, bool icmp, bool tcp_syn, bool tcp_fin, bool tcp_rst, bool tcp_ack)
+        : udp(udp), 
+          tcp(tcp), 
+          icmp(icmp), 
+          tcp_syn(tcp_syn), 
+          tcp_fin(tcp_fin), 
+          tcp_rst(tcp_rst), 
+          tcp_ack(tcp_ack){
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const PktType& pkt_type);
 };
 
@@ -59,6 +70,13 @@ struct PktInfo {
     friend std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info);
 };
 
+class pkt_info_template {
+  public:
+    const static PktInfo syn_tcp;
+    const static PktInfo udp;
+    const static PktInfo icmp;
+};
+
 template<class K, typename V>
 class MapVec {
   public:
@@ -82,9 +100,9 @@ class MapVec {
 };
 
 timeval timeval_minus(const timeval &a, const timeval &b);
+timeval timeval_plus(const timeval &a, const timeval &b);
 
 PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content);
-
 void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_t capture_length, pcap_pkthdr *pkt_header, u_char *pkt_content);
 
 #endif

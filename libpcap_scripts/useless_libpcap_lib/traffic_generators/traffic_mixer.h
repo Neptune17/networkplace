@@ -23,13 +23,16 @@ struct TrafficMixerEvent {
     }
 };
 
-class TrafficMixer {
+class TrafficMixer: public AbstractTrafficGenerator{
   public:
     TrafficMixer();
 
     void add_traffic_generator(AbstractTrafficGenerator* traffic_generator);
-    PktInfo generate_next();
-    bool is_end();
+    
+    PktInfo get_current_pkt_info() override;
+    timeval generate_next() override;
+    bool is_end() override;
+    void close() override;
   
   private:
     std::vector<AbstractTrafficGenerator*> traffic_generators_;
