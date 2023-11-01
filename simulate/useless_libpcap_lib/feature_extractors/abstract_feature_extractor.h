@@ -14,6 +14,7 @@ class AbstractFeatureExtractor{
     void print_feature(FiveTuple flow_id);
     bool is_ready(FiveTuple flow_id);
     void set_name(std::string name){name_ = name;}
+  
   private:
     std::string name_ = "default";
     virtual void append_packet_(PktInfo pkt_info) = 0;

@@ -33,7 +33,7 @@ void PcapReader::close(){
 }
 
 PcapReader::PcapReader(){
-
+    is_end_ = false;
 }
     
 PcapReader::PcapReader(const char *pcap_file_dir){
@@ -45,4 +45,5 @@ PcapReader::PcapReader(const char *pcap_file_dir){
     start_time_ = timeval();
     start_time_ = generate_next();
     curr_pkt_info_.pkt_time = timeval_minus(curr_pkt_info_.pkt_time, start_time_);
+    is_end_ = false;
 }

@@ -14,8 +14,14 @@ const PktInfo pkt_info_template::icmp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, Pkt
 
 timeval timeval_minus(const timeval &a, const timeval &b){
     timeval ans;
-    ans.tv_sec = a.tv_sec - b.tv_sec;
-    ans.tv_usec = a.tv_usec - b.tv_usec;
+    if (a.tv_usec < b.tv_usec){
+        ans.tv_sec = a.tv_sec - b.tv_sec - 1;
+        ans.tv_usec = a.tv_usec + 1000000 - b.tv_usec;
+    }
+    else{
+        ans.tv_sec = a.tv_sec - b.tv_sec;
+        ans.tv_usec = a.tv_usec - b.tv_usec;
+    }
     return ans;
 }
 
@@ -23,7 +29,28 @@ timeval timeval_plus(const timeval &a, const timeval &b){
     timeval ans;
     ans.tv_sec = a.tv_sec + b.tv_sec;
     ans.tv_usec = a.tv_usec + b.tv_usec;
+    if (ans.tv_usec >= 1000000){
+        ans.tv_sec += 1;
+        ans.tv_usec -= 1000000;
+    }
     return ans;
+}
+
+bool timeval_less(const timeval &a, const timeval &b){
+    if (a.tv_sec < b.tv_sec){
+        return true;
+    }
+    else if (a.tv_sec == b.tv_sec){
+        if (a.tv_usec < b.tv_usec){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        return false;
+    }
 }
 
 PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content){
