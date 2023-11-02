@@ -21,6 +21,9 @@ timeval TrafficGenerator::generate_next() {
 }
 
 bool TrafficGenerator::is_end() {
+    if (timeval_less(stop_time_, curr_pkt_info_.pkt_time)) {
+        return true;
+    }
     return false;
 }
 
@@ -33,13 +36,14 @@ TrafficGenerator::TrafficGenerator() {
     curr_pkt_info_ = PktInfo();
 }
 
-TrafficGenerator::TrafficGenerator(timeval start_time, PktInfo template_pkt_info) {
+TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, timeval start_time = {0,0}, timeval stop_time = {114514,0}) {
     template_pkt_info_ = template_pkt_info;
     curr_pkt_info_ = template_pkt_info;
     curr_pkt_info_.pkt_time = start_time;
+    stop_time_ = stop_time;
 }
 
-TrafficGenerator::TrafficGenerator(timeval start_time, PktInfo template_pkt_info, std::vector<AbstractStrategy*> strategies) {
+TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, std::vector<AbstractStrategy*> strategies, timeval start_time = {0,0}, timeval stop_time = {114514,0}) {
     template_pkt_info_ = template_pkt_info;
     curr_pkt_info_ = template_pkt_info;
     curr_pkt_info_.pkt_time = start_time;

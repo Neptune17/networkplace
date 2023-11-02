@@ -7,7 +7,7 @@
 
 #include "utils.h"
 
-class NetsentryFeatureExtractor : public AbstractFeatureExtractor{
+class NetsentryFeatureExtractor :public AbstractFeatureExtractor{
   public:
     NetsentryFeatureExtractor();
     NetsentryFeatureExtractor(std::string name);
