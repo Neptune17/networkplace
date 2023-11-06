@@ -3,7 +3,9 @@
 #include <iostream>
 
 void AbstractFeatureExtractor::append_packet(PktInfo pkt_info){
-    this->append_packet_(pkt_info);
+    if (filter_ == nullptr || filter_->accept(pkt_info)){
+        this->append_packet_(pkt_info);
+    }
 }
 
 void AbstractFeatureExtractor::print_feature(FiveTuple flow_id){
