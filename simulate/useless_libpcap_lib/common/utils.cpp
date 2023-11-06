@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+#include <iostream>
+#include <iomanip>
+
 #include <pcap.h>
 #include <net/ethernet.h>
 #include <netinet/ip.h>
@@ -132,6 +135,43 @@ void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_
     uint32_t frame_length = (uint32_t)pkt_info.pkt_len + (uint32_t)sizeof(struct ether_header);
     pkt_header->caplen = std::min(capture_length, frame_length);
     pkt_header->len = frame_length;
+}
+
+uint32_t ip_str_to_uint(char* str_ip){
+    uint32_t uint_ip;
+    inet_pton(AF_INET, str_ip, &uint_ip);
+    return uint_ip;
+}
+
+char str_ip_mem[INET_ADDRSTRLEN];
+char* ip_uint_to_str(uint32_t uint_ip){
+    inet_ntop(AF_INET, &uint_ip, str_ip_mem, INET_ADDRSTRLEN);
+    return str_ip_mem;
+}
+
+uint32_t prefix_len_to_mask(uint32_t prefix_len){
+    uint32_t mask = 0;
+    for(int i = 0; i < prefix_len; i++){
+        mask = mask << 1;
+        mask += 1;
+    }
+    mask = mask << (32 - prefix_len);
+    return htonl(mask);
+}
+
+bool prefix_match(uint32_t ip, uint32_t prefix, uint32_t mask){
+    return (ip & mask) == prefix;
+}
+
+void print_original_packet(const u_char *pkt_content, pcap_pkthdr *pkt_header){
+    std::cout << std::dec << pkt_header->ts.tv_sec << std::endl;
+    std::cout << pkt_header->ts.tv_usec << std::endl;
+    std::cout << pkt_header->caplen << std::endl;
+    std::cout << pkt_header->len<< std::endl;
+    for(int i = 0; i < pkt_header->caplen; i++){
+        std::cout << std::setw(2) << std::setfill('0') << std::hex << int(pkt_content[i]) << " ";
+    }
+    std::cout << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple){

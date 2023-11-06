@@ -47,10 +47,10 @@ void PcapWriter::generate_template(){
     tcp_header->th_urp = 0;
 }
 
-void PcapWriter::dump_pkt(PktInfo pkt_info){
+void PcapWriter::dump_pkt_info(PktInfo pkt_info){
     pcap_pkthdr *pkt_header = new pcap_pkthdr();
-    u_char *pkt_content = new u_char[kCaplen];
-    pkt_info_to_raw_pkt(pkt_info, tcp_template_, kCaplen, pkt_header, pkt_content);
+    u_char *pkt_content = new u_char[kCaplen_];
+    pkt_info_to_raw_pkt(pkt_info, tcp_template_, kCaplen_, pkt_header, pkt_content);
     pcap_dump((u_char *)pcap_dumper_, pkt_header, pkt_content);
 }
 
@@ -58,13 +58,18 @@ void PcapWriter::close_dump_file(){
     pcap_dump_close(pcap_dumper_);
 }
 
+void PcapWriter::dump_original_pkt(const u_char *pkt_content, pcap_pkthdr *pkt_header){
+    pcap_dump((u_char *)pcap_dumper_, pkt_header, pkt_content);
+}
+
 PcapWriter::PcapWriter(){
 
 }
     
-PcapWriter::PcapWriter(const char *pcap_file_dir){
+PcapWriter::PcapWriter(const char *pcap_file_dir, uint32_t kCaplen){
+    kCaplen_ = kCaplen;
     generate_template();
-    pcap_descr_ = pcap_open_dead_with_tstamp_precision(DLT_EN10MB, kCaplen, PCAP_TSTAMP_PRECISION_NANO);
+    pcap_descr_ = pcap_open_dead_with_tstamp_precision(DLT_EN10MB, kCaplen_, PCAP_TSTAMP_PRECISION_NANO);
     pcap_dumper_ = pcap_dump_open(pcap_descr_, pcap_file_dir);
     if(pcap_dumper_ == NULL){
         std::cout << "pcap_dumper == NULL" << std::endl;

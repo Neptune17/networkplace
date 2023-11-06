@@ -1,0 +1,5 @@
+objs/*
+deps/*
+main
+result/*
+__pycache__/*

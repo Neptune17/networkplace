@@ -106,4 +106,11 @@ bool timeval_less(const timeval &a, const timeval &b);
 PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content);
 void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_t capture_length, pcap_pkthdr *pkt_header, u_char *pkt_content);
 
+uint32_t ip_str_to_uint(char* str_ip);
+char* ip_uint_to_str(uint32_t uint_ip);
+uint32_t prefix_len_to_mask(uint32_t prefix_len);
+bool prefix_match(uint32_t ip, uint32_t prefix, uint32_t mask);
+
+void print_original_packet(const u_char *pkt_content, pcap_pkthdr *pkt_header);
+
 #endif
