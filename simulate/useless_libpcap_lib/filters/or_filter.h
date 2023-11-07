@@ -9,10 +9,10 @@ class OrFilter: public AbstractFilter{
   public:
     OrFilter();
     OrFilter(std::vector<AbstractFilter*> filters);
-
-    bool accept(PktInfo pkt_info) override;
     
     void add_filter(AbstractFilter* filter);
+
+    bool accept(PktInfo pkt_info) override;
 
   private:
     std::vector<AbstractFilter*> filters_;

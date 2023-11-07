@@ -1,8 +1,13 @@
 #include "random_dst_port_strategy.h"
 
 #include <random>
+#include <vector>
 
 #include "utils.h"
+
+RandomDstPortStrategy::RandomDstPortStrategy(std::vector<uint16_t> dst_ports){
+    dst_ports_ = dst_ports;
+}
 
 PktInfo RandomDstPortStrategy::apply(PktInfo pkt_info){
     if(dst_ports_.size() == 0){
@@ -12,12 +17,4 @@ PktInfo RandomDstPortStrategy::apply(PktInfo pkt_info){
         pkt_info.flow_id.dst_port = dst_ports_[rand() % dst_ports_.size()];
     }
     return pkt_info;
-}
-
-RandomDstPortStrategy::RandomDstPortStrategy(){
-
-}
-
-RandomDstPortStrategy::RandomDstPortStrategy(std::vector<uint16_t> dst_ports){
-    dst_ports_ = dst_ports;
 }

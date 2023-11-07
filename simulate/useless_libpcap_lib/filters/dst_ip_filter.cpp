@@ -2,11 +2,6 @@
 
 #include "utils.h"
 
-DstIpFilter::DstIpFilter(){
-    prefix_ = 0;
-    mask_ = 0;
-}
-
 DstIpFilter::DstIpFilter(char* prefix_str, uint32_t prefix_len){
     prefix_ = ip_str_to_uint(prefix_str);
     mask_ = prefix_len_to_mask(prefix_len);

@@ -2,10 +2,12 @@
 #include <iomanip>
 #include <string>
 
+#include "abstract_feature_extractor.h"
 #include "pcap_reader.h"
 #include "pcap_writer.h"
 #include "bandwidth_monitor.h"
 #include "dst_ip_filter.h"
+#include "dst_ip_flow_identification.h"
 
 int main(){
     
@@ -38,11 +40,9 @@ int main(){
     MapVec<uint32_t, PktInfo> src_ip_aggr;
     MapVec<uint32_t, PktInfo> dst_ip_aggr;
 
-    BandwidthMonitor bandwidth_monitor_189 = BandwidthMonitor({0, 100000}, std::string("BandwidthMonitor189"));
-    bandwidth_monitor_189.set_filter(new DstIpFilter("189.0.0.0", 8));
-    BandwidthMonitor bandwidth_monitor_187 = BandwidthMonitor({0, 100000}, std::string("BandwidthMonitor187"));
-    bandwidth_monitor_187.set_filter(new DstIpFilter("187.0.0.0", 8));
-    BandwidthMonitor bandwidth_monitor = BandwidthMonitor({0, 100000}, std::string("BandwidthMonitor"));
+    BandwidthMonitor<uint32_t> bandwidth_monitor_189 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitor189"), new DstIpFilter("189.0.0.0", 8), new DstIpFlowIdentification(), {0,100000});
+    BandwidthMonitor<uint32_t> bandwidth_monitor_187 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitor187"), new DstIpFilter("187.0.0.0", 8), new DstIpFlowIdentification(), {0,100000});
+    BandwidthMonitor<uint32_t> bandwidth_monitor = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitor"), nullptr, new DstIpFlowIdentification(), {0,100000});
     std::vector<AbstractFeatureExtractor*> feature_extractors;
     feature_extractors.push_back(&bandwidth_monitor_189);
     feature_extractors.push_back(&bandwidth_monitor_187);

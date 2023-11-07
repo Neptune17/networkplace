@@ -1,8 +1,13 @@
 #include "random_src_ip_strategy.h"
 
 #include <random>
+#include <vector>
 
 #include "utils.h"
+
+RandomSrcIpStrategy::RandomSrcIpStrategy(std::vector<uint32_t> src_ips){
+    src_ips_ = src_ips;
+}
 
 PktInfo RandomSrcIpStrategy::apply(PktInfo pkt_info){
     if(src_ips_.size() == 0){
@@ -12,12 +17,4 @@ PktInfo RandomSrcIpStrategy::apply(PktInfo pkt_info){
         pkt_info.flow_id.src_ip = src_ips_[rand() % src_ips_.size()];
     }
     return pkt_info;
-}
-
-RandomSrcIpStrategy::RandomSrcIpStrategy(){
-
-}
-
-RandomSrcIpStrategy::RandomSrcIpStrategy(std::vector<uint32_t> src_ips){
-    src_ips_ = src_ips;
 }

@@ -9,8 +9,7 @@
 
 class RandomDstPortStrategy: public AbstractStrategy{
   public:
-    RandomDstPortStrategy();
-    RandomDstPortStrategy(std::vector<uint16_t> dst_ports);
+    RandomDstPortStrategy(std::vector<uint16_t> dst_ports = {});
 
     PktInfo apply(PktInfo pkt_info) override;
 

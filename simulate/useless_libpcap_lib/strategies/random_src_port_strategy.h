@@ -9,8 +9,7 @@
 
 class RandomSrcPortStrategy: public AbstractStrategy{
   public:
-    RandomSrcPortStrategy();
-    RandomSrcPortStrategy(std::vector<uint16_t> src_ports);
+    RandomSrcPortStrategy(std::vector<uint16_t> src_ports = {});
 
     PktInfo apply(PktInfo pkt_info) override;
 

@@ -13,11 +13,6 @@ PktInfo CarpetBombingStrategy::apply(PktInfo pkt_info){
     return pkt_info;
 }
 
-CarpetBombingStrategy::CarpetBombingStrategy(std::vector<uint32_t> target_ip_list){
-    target_ip_list_ = target_ip_list;
-    polling_strategy_ = POLLING_STRATEGY_ROUND_ROBIN;
-}
-
 CarpetBombingStrategy::CarpetBombingStrategy(std::vector<uint32_t> target_ip_list, uint32_t polling_strategy){
     target_ip_list_ = target_ip_list;
     polling_strategy_ = polling_strategy;

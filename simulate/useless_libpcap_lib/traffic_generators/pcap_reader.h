@@ -9,15 +9,14 @@
 
 class PcapReader: public AbstractTrafficGenerator {
   public:
-    PcapReader();
     PcapReader(const char *pcap_file_dir, bool enable_original_pkt = false);
+
+    void get_curr_original_pkt(u_char *pkt_content, pcap_pkthdr *pkt_header);
 
     PktInfo get_current_pkt_info() override;
     timeval generate_next() override;
     bool is_end() override;
     void close() override;
-
-    void get_curr_original_pkt(u_char *pkt_content, pcap_pkthdr *pkt_header);
 
   private:
     pcap_t *pcap_descr_;

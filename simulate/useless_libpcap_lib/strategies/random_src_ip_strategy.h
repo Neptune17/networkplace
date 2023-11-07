@@ -9,8 +9,7 @@
 
 class RandomSrcIpStrategy: public AbstractStrategy{
   public:
-    RandomSrcIpStrategy();
-    RandomSrcIpStrategy(std::vector<uint32_t> src_ips);
+    RandomSrcIpStrategy(std::vector<uint32_t> src_ips = {});
 
     PktInfo apply(PktInfo pkt_info) override;
 

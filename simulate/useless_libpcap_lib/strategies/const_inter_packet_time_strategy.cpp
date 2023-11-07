@@ -7,6 +7,6 @@ PktInfo ConstInterPacketTimeStrategy::apply(PktInfo pkt_info){
     return pkt_info;
 }
 
-ConstInterPacketTimeStrategy::ConstInterPacketTimeStrategy(timeval inter_packet_time = {0,1}){
+ConstInterPacketTimeStrategy::ConstInterPacketTimeStrategy(timeval inter_packet_time){
     inter_packet_time_ = inter_packet_time;
 }

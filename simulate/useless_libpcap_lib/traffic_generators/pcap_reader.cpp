@@ -1,8 +1,29 @@
 #include "pcap_reader.h"
 
 #include <string.h>
-
 #include <iostream>
+
+#include <pcap.h>
+
+#include "utils.h"
+
+PcapReader::PcapReader(const char *pcap_file_dir, bool enable_original_pkt){
+    enable_original_pkt_ = enable_original_pkt;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_descr_ = pcap_open_offline(pcap_file_dir, errbuf);
+    if (pcap_descr_ == NULL) {
+        std::cout << "pcap_open_offline()failed:" << errbuf << std::endl;
+    }
+    start_time_ = timeval();
+    start_time_ = generate_next();
+    curr_pkt_info_.pkt_time = timeval_minus(curr_pkt_info_.pkt_time, start_time_);
+    is_end_ = false;
+}
+
+void PcapReader::get_curr_original_pkt(u_char *pkt_content, pcap_pkthdr *pkt_header){
+    memcpy(pkt_content, curr_pkt_content_, curr_pkt_header_.caplen);
+    memcpy(pkt_header, &curr_pkt_header_, sizeof(pcap_pkthdr));
+}
 
 PktInfo PcapReader::get_current_pkt_info(){
     return curr_pkt_info_;
@@ -37,26 +58,4 @@ bool PcapReader::is_end(){
 
 void PcapReader::close(){
     pcap_close(pcap_descr_);
-}
-
-void PcapReader::get_curr_original_pkt(u_char *pkt_content, pcap_pkthdr *pkt_header){
-    memcpy(pkt_content, curr_pkt_content_, curr_pkt_header_.caplen);
-    memcpy(pkt_header, &curr_pkt_header_, sizeof(pcap_pkthdr));
-}
-
-PcapReader::PcapReader(){
-    is_end_ = false;
-}
-    
-PcapReader::PcapReader(const char *pcap_file_dir, bool enable_original_pkt){
-    enable_original_pkt_ = enable_original_pkt;
-    char errbuf[PCAP_ERRBUF_SIZE];
-    pcap_descr_ = pcap_open_offline(pcap_file_dir, errbuf);
-    if (pcap_descr_ == NULL) {
-        std::cout << "pcap_open_offline()failed:" << errbuf << std::endl;
-    }
-    start_time_ = timeval();
-    start_time_ = generate_next();
-    curr_pkt_info_.pkt_time = timeval_minus(curr_pkt_info_.pkt_time, start_time_);
-    is_end_ = false;
 }

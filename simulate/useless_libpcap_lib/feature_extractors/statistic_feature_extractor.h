@@ -1,9 +1,12 @@
 #ifndef STATISTIC_FEATURE_EXTRACTOR_H
 #define STATISTIC_FEATURE_EXTRACTOR_H
 
-#include "abstract_feature_extractor.h"
+#include "feature_extractor_template.h"
 
 #include <ostream>
+
+#include "utils.h"
+#include "dst_ip_flow_identification.h"
 
 struct StatisticFeature{
     uint64_t total_packet_count;
@@ -19,24 +22,20 @@ struct StatisticFeature{
     friend std::ostream& operator<<(std::ostream& os, const StatisticFeature& statistic_feature);
 };
 
-class StatisticFeatureExtractor : public AbstractFeatureExtractor{
+template<typename T>
+class StatisticFeatureExtractor : public FeatureExtractorTemplate<T>{
   public:
-    StatisticFeatureExtractor();
-    StatisticFeatureExtractor(std::string name);
-    StatisticFeatureExtractor(std::string name, std::map<uint32_t, uint32_t> aggregation_configuration);
+    StatisticFeatureExtractor(std::string name = std::string("NetsentryFeatureExtractor"), AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstIpFlowIdentification());
 
   private:
-    void append_packet_(PktInfo pkt_info) override;
-    void print_feature_(FiveTuple flow_id) override;
-    bool is_ready_(FiveTuple flow_id) override;
-    
-    uint32_t get_aggr_flow_id_(FiveTuple flow_id);
-    uint32_t get_inter_pkt_time_(uint32_t key, timeval new_pkt_time);
+    uint32_t get_inter_pkt_time_(T flow_id, timeval new_pkt_time);
 
-    std::map<uint32_t, StatisticFeature> pkt_features_;
-    std::map<uint32_t, uint32_t> last_pkt_time_;
+    void append_packet_(T flow_id, PktInfo pkt_info) override;
+    void print_feature_(T flow_id) override;
+    bool is_ready_(T flow_id) override;
 
-    std::map<uint32_t, uint32_t> aggregation_configuration_;
+    std::map<T, StatisticFeature> pkt_features_;
+    std::map<T, uint32_t> last_pkt_time_;
 };
 
 #endif

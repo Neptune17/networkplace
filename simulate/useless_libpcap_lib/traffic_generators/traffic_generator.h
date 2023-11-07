@@ -10,9 +10,7 @@
 
 class TrafficGenerator: public AbstractTrafficGenerator{
   public:
-    TrafficGenerator();
-    TrafficGenerator(PktInfo template_pkt_info, timeval start_time, timeval stop_time);
-    TrafficGenerator(PktInfo template_pkt_info, std::vector<AbstractStrategy*> strategies, timeval start_time, timeval stop_time);
+    TrafficGenerator(PktInfo template_pkt_info, timeval start_time = {0, 0}, timeval stop_time = {114514, 0}, std::vector<AbstractStrategy*> strategies = {});
 
     void add_strategy(AbstractStrategy* strategy);
     

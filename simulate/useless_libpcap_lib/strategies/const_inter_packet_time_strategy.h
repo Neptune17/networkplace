@@ -7,7 +7,7 @@
 
 class ConstInterPacketTimeStrategy: public AbstractStrategy{
   public:
-    ConstInterPacketTimeStrategy(timeval inter_packet_time);
+    ConstInterPacketTimeStrategy(timeval inter_packet_time = {0, 1});
 
     PktInfo apply(PktInfo pkt_info) override;
 

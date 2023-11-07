@@ -1,8 +1,13 @@
 #include "random_dst_ip_strategy.h"
 
 #include <random>
+#include <vector>
 
 #include "utils.h"
+
+RandomDstIpStrategy::RandomDstIpStrategy(std::vector<uint32_t> dst_ips){
+    dst_ips_ = dst_ips;
+}
 
 PktInfo RandomDstIpStrategy::apply(PktInfo pkt_info){
     if(dst_ips_.size() == 0){
@@ -12,12 +17,4 @@ PktInfo RandomDstIpStrategy::apply(PktInfo pkt_info){
         pkt_info.flow_id.dst_ip = dst_ips_[rand() % dst_ips_.size()];
     }
     return pkt_info;
-}
-
-RandomDstIpStrategy::RandomDstIpStrategy(){
-
-}
-
-RandomDstIpStrategy::RandomDstIpStrategy(std::vector<uint32_t> dst_ips){
-    dst_ips_ = dst_ips;
 }

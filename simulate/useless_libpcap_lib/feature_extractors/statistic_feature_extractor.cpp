@@ -15,30 +15,29 @@ std::ostream& operator<<(std::ostream& os, const StatisticFeature& statistic_fea
     return os;
 }
 
-uint32_t StatisticFeatureExtractor::get_aggr_flow_id_(FiveTuple flow_id){
-    uint32_t key = flow_id.dst_ip;
-    auto iter = aggregation_configuration_.find(key);
-    if(iter != aggregation_configuration_.end()){
-        key = iter->second;
-    }
-    return key;
+template<typename T>
+StatisticFeatureExtractor<T>::StatisticFeatureExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification){
+    this->set_name(name);
+    this->set_filter(filter);
+    this->set_flow_identification(flow_identification);
 }
 
-uint32_t StatisticFeatureExtractor::get_inter_pkt_time_(uint32_t key, timeval new_pkt_time){
+template<typename T>
+uint32_t StatisticFeatureExtractor<T>::get_inter_pkt_time_(T flow_id, timeval new_pkt_time){
     uint32_t inter_pkt_time = 0;
     uint32_t int_new_pkt_time = new_pkt_time.tv_sec * 1000000 + new_pkt_time.tv_usec;
-    auto iter = last_pkt_time_.find(key);
+    auto iter = last_pkt_time_.find(flow_id);
     if(iter != last_pkt_time_.end()){
         inter_pkt_time = int_new_pkt_time - iter->second;
     }
-    last_pkt_time_[key] = int_new_pkt_time;
+    last_pkt_time_[flow_id] = int_new_pkt_time;
     return inter_pkt_time;
 }
 
-void StatisticFeatureExtractor::append_packet_(PktInfo pkt_info){
-    uint32_t key = get_aggr_flow_id_(pkt_info.flow_id);
-    uint64_t inter_packet_time = (uint64_t)get_inter_pkt_time_(key, pkt_info.pkt_time);
-    auto iter = pkt_features_.find(key);
+template<typename T>
+void StatisticFeatureExtractor<T>::append_packet_(T flow_id, PktInfo pkt_info){
+    uint64_t inter_packet_time = (uint64_t)get_inter_pkt_time_(flow_id, pkt_info.pkt_time);
+    auto iter = pkt_features_.find(flow_id);
     if(iter != pkt_features_.end()){
         iter->second.total_packet_count += 1;
         iter->second.total_packet_bytes += (uint64_t)pkt_info.pkt_len;
@@ -61,33 +60,23 @@ void StatisticFeatureExtractor::append_packet_(PktInfo pkt_info){
         new_feature.total_squared_inter_packet_time = 0;
         new_feature.min_inter_packet_time = 0xffffffff;
         new_feature.max_inter_packet_time = 0;
-        pkt_features_[key] = new_feature;
+        pkt_features_[flow_id] = new_feature;
     }
 }
 
-void StatisticFeatureExtractor::print_feature_(FiveTuple flow_id){
-    uint32_t key = get_aggr_flow_id_(flow_id);
-    auto iter = pkt_features_.find(key);
-    std::cout << "\"key\":" << key << ",";
+template<typename T>
+void StatisticFeatureExtractor<T>::print_feature_(T flow_id){
+    auto iter = pkt_features_.find(flow_id);
+    std::cout << "\"key\":";
+    this->print_flow_id(flow_id);
+    std::cout << ",";
     std::cout << "\"value\":";
     std::cout << "{";
     std::cout << iter->second;
     std::cout << "}";
 }
 
-bool StatisticFeatureExtractor::is_ready_(FiveTuple flow_id){
+template<typename T>
+bool StatisticFeatureExtractor<T>::is_ready_(T flow_id){
     return true;
-}
-
-StatisticFeatureExtractor::StatisticFeatureExtractor(){
-    set_name("Statistic");
-}
-
-StatisticFeatureExtractor::StatisticFeatureExtractor(std::string name){
-    set_name(name);
-}
-
-StatisticFeatureExtractor::StatisticFeatureExtractor(std::string name, std::map<uint32_t, uint32_t> aggregation_configuration){
-    set_name(name);
-    aggregation_configuration_ = aggregation_configuration;
 }

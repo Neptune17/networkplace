@@ -9,8 +9,7 @@
 
 class RandomInterPacketTimeStrategy: public AbstractStrategy{
   public:
-    RandomInterPacketTimeStrategy();
-    RandomInterPacketTimeStrategy(std::vector<timeval> inter_packet_times);
+    RandomInterPacketTimeStrategy(std::vector<timeval> inter_packet_times = {});
 
     PktInfo apply(PktInfo pkt_info) override;
 

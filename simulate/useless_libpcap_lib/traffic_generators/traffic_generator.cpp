@@ -1,6 +1,14 @@
 #include "traffic_generator.h"
 
+#include "utils.h"
 #include "abstract_strategy.h"
+
+TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, timeval start_time, timeval stop_time, std::vector<AbstractStrategy*> strategies) {
+    template_pkt_info_ = template_pkt_info;
+    curr_pkt_info_ = template_pkt_info;
+    curr_pkt_info_.pkt_time = start_time;
+    strategies_ = strategies;
+}
 
 void TrafficGenerator::add_strategy(AbstractStrategy* strategy) {
     strategies_.push_back(strategy);
@@ -29,23 +37,4 @@ bool TrafficGenerator::is_end() {
 
 void TrafficGenerator::close() {
     
-}
-
-TrafficGenerator::TrafficGenerator() {
-    template_pkt_info_ = PktInfo();
-    curr_pkt_info_ = PktInfo();
-}
-
-TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, timeval start_time = {0,0}, timeval stop_time = {114514,0}) {
-    template_pkt_info_ = template_pkt_info;
-    curr_pkt_info_ = template_pkt_info;
-    curr_pkt_info_.pkt_time = start_time;
-    stop_time_ = stop_time;
-}
-
-TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, std::vector<AbstractStrategy*> strategies, timeval start_time = {0,0}, timeval stop_time = {114514,0}) {
-    template_pkt_info_ = template_pkt_info;
-    curr_pkt_info_ = template_pkt_info;
-    curr_pkt_info_.pkt_time = start_time;
-    strategies_ = strategies;
 }

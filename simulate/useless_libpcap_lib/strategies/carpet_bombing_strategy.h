@@ -12,8 +12,7 @@
 
 class CarpetBombingStrategy: public AbstractStrategy{
   public:
-    CarpetBombingStrategy(std::vector<uint32_t> target_ip_list);
-    CarpetBombingStrategy(std::vector<uint32_t> target_ip_list, uint32_t polling_strategy);
+    CarpetBombingStrategy(std::vector<uint32_t> target_ip_list, uint32_t polling_strategy = POLLING_STRATEGY_ROUND_ROBIN);
 
     PktInfo apply(PktInfo pkt_info) override;
 

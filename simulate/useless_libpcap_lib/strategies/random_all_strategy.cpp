@@ -8,13 +8,6 @@
 #include "random_pkt_size_strategy.h"
 #include "random_inter_packet_time_strategy.h"
 
-PktInfo RandomAllStrategy::apply(PktInfo pkt_info){
-    for(auto strategy: strategies_){
-        pkt_info = strategy->apply(pkt_info);
-    }
-    return pkt_info;
-}
-
 RandomAllStrategy::RandomAllStrategy(){
     strategies_.push_back(new RandomSrcPortStrategy());
     strategies_.push_back(new RandomSrcIpStrategy());
@@ -22,4 +15,11 @@ RandomAllStrategy::RandomAllStrategy(){
     strategies_.push_back(new RandomDstIpStrategy());
     strategies_.push_back(new RandomPktSizeStrategy());
     strategies_.push_back(new RandomInterPacketTimeStrategy());
+}
+
+PktInfo RandomAllStrategy::apply(PktInfo pkt_info){
+    for(auto strategy: strategies_){
+        pkt_info = strategy->apply(pkt_info);
+    }
+    return pkt_info;
 }

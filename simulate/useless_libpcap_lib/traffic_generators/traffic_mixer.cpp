@@ -1,5 +1,12 @@
 #include "traffic_mixer.h"
 
+#include "utils.h"
+#include "abstract_traffic_generator.h"
+
+TrafficMixer::TrafficMixer(){
+
+}
+
 void TrafficMixer::add_traffic_generator(AbstractTrafficGenerator* traffic_generator){
     traffic_generators_.push_back(traffic_generator);
     event_queue_.push(TrafficMixerEvent(traffic_generator->get_current_pkt_info().pkt_time, traffic_generators_.size() - 1));
@@ -44,8 +51,4 @@ void TrafficMixer::close(){
         event_queue_.pop();
         traffic_generators_[traffic_generator_index]->close();
     }
-}
-
-TrafficMixer::TrafficMixer(){
-
 }

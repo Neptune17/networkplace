@@ -9,27 +9,29 @@
 
 #include "utils.h"
 
-uint32_t NetsentryFeatureExtractor::get_aggr_flow_id_(FiveTuple flow_id){
-    uint32_t key = flow_id.dst_ip;
-    auto iter = aggregation_configuration_.find(key);
-    if(iter != aggregation_configuration_.end()){
-        key = iter->second;
-    }
-    return key;
+template<typename T>
+NetsentryFeatureExtractor<T>::NetsentryFeatureExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification, size_t dft_sequence_length, size_t dft_feature_length){
+    this->set_name(name);
+    this->set_filter(filter);
+    this->set_flow_identification(flow_identification);
+    dft_sequence_length_ = dft_sequence_length;
+    dft_feature_length_ = dft_feature_length;
 }
 
-uint32_t NetsentryFeatureExtractor::get_inter_pkt_time_(uint32_t key, timeval new_pkt_time){
+template<typename T>
+uint32_t NetsentryFeatureExtractor<T>::get_inter_pkt_time_(T flow_id, timeval new_pkt_time){
     uint32_t inter_pkt_time = 0;
     uint32_t int_new_pkt_time = new_pkt_time.tv_sec * 1000000 + new_pkt_time.tv_usec;
-    auto iter = last_pkt_time_.find(key);
+    auto iter = last_pkt_time_.find(flow_id);
     if(iter != last_pkt_time_.end()){
         inter_pkt_time = int_new_pkt_time - iter->second;
     }
-    last_pkt_time_[key] = int_new_pkt_time;
+    last_pkt_time_[flow_id] = int_new_pkt_time;
     return inter_pkt_time;
 }
 
-uint32_t NetsentryFeatureExtractor::pkt_feature_embed_(uint32_t pkt_len, PktType pkt_type, uint32_t inter_pkt_time){
+template<typename T>
+uint32_t NetsentryFeatureExtractor<T>::pkt_feature_embed_(uint32_t pkt_len, PktType pkt_type, uint32_t inter_pkt_time){
     uint32_t cooked_len = (pkt_len >= 1600) ? (31 << 10) : (pkt_len / 50) << 10;
     
     uint32_t cooked_dtime = 0;
@@ -52,52 +54,34 @@ uint32_t NetsentryFeatureExtractor::pkt_feature_embed_(uint32_t pkt_len, PktType
     return cooked_feature;
 }
 
-void NetsentryFeatureExtractor::append_packet_(PktInfo pkt_info){
-    uint32_t key = get_aggr_flow_id_(pkt_info.flow_id);
-    uint32_t inter_packet_time = get_inter_pkt_time_(key, pkt_info.pkt_time);
-    pkt_features_.insert(key, pkt_feature_embed_(pkt_info.pkt_len, pkt_info.pkt_type, inter_packet_time));
+template<typename T>
+void NetsentryFeatureExtractor<T>::append_packet_(T flow_id, PktInfo pkt_info){
+    uint32_t inter_packet_time = get_inter_pkt_time_(flow_id, pkt_info.pkt_time);
+    pkt_features_.insert(flow_id, pkt_feature_embed_(pkt_info.pkt_len, pkt_info.pkt_type, inter_packet_time));
 }
 
-void NetsentryFeatureExtractor::print_feature_(FiveTuple flow_id){
-    uint32_t key = get_aggr_flow_id_(flow_id);
-    auto feature_array = pkt_features_.get(key);
+template<typename T>
+void NetsentryFeatureExtractor<T>::print_feature_(T flow_id){
+    auto feature_array = pkt_features_.get(flow_id);
     
     const char * error = NULL;
     bool ret;
     std::vector<std::complex<double>> fft_result(dft_sequence_length_);
     ret = simple_fft::FFT(feature_array, fft_result, dft_sequence_length_, error);
     
-    std::cout << "\"key\":" << key << ",";
+    std::cout << "\"key\":";
+    this->print_flow_id(flow_id);
+    std::cout << ",";
     std::cout << "\"value\":";
     std::cout << "[";
     for(int i = 0; i < dft_feature_length_ - 1;i ++){std::cout << fft_result[i].real() << "," << fft_result[i].imag() << ",";}
     std::cout << fft_result[dft_feature_length_ - 1].real() << "," << fft_result[dft_feature_length_ - 1].imag();
     std::cout << "]";
     
-    pkt_features_.clear(key);
+    pkt_features_.clear(flow_id);
 }
 
-bool NetsentryFeatureExtractor::is_ready_(FiveTuple flow_id){
-    uint32_t key = get_aggr_flow_id_(flow_id);
-    return pkt_features_.get(key).size() == dft_sequence_length_;
-}
-
-NetsentryFeatureExtractor::NetsentryFeatureExtractor(){
-    set_name("NetSentry");
-}
-
-NetsentryFeatureExtractor::NetsentryFeatureExtractor(std::string name){
-    set_name(name);
-}
-
-NetsentryFeatureExtractor::NetsentryFeatureExtractor(std::string name, std::map<uint32_t, uint32_t> aggregation_configuration){
-    set_name(name);
-    aggregation_configuration_ = aggregation_configuration;
-}
-
-NetsentryFeatureExtractor::NetsentryFeatureExtractor(std::string name, std::map<uint32_t, uint32_t> aggregation_configuration, size_t dft_sequence_length, size_t dft_feature_length){
-    set_name(name);
-    aggregation_configuration_ = aggregation_configuration;
-    dft_sequence_length_ = dft_sequence_length;
-    dft_feature_length_ = dft_feature_length;
+template<typename T>
+bool NetsentryFeatureExtractor<T>::is_ready_(T flow_id){
+    return pkt_features_.get(flow_id).size() == dft_sequence_length_;
 }
