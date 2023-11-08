@@ -18,5 +18,8 @@ bool OrFilter::accept(PktInfo pkt_info){
             return true;
         }
     }
+    if(filters_.size() == 0){
+        return true;
+    }
     return false;
 }

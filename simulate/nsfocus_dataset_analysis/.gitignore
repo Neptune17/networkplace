@@ -3,3 +3,4 @@ deps/*
 main
 result/*
 __pycache__/*
+nsfocus/*

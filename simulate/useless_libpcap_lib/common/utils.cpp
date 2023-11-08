@@ -174,6 +174,55 @@ void print_original_packet(const u_char *pkt_content, pcap_pkthdr *pkt_header){
     std::cout << std::endl;
 }
 
+bool FiveTuple::operator<(const FiveTuple &a)const{
+    if(src_ip < a.src_ip){
+        return true;
+    }
+    else if(src_ip == a.src_ip){
+        if(dst_ip < a.dst_ip){
+            return true;
+        }
+        else if(dst_ip == a.dst_ip){
+            if(src_port < a.src_port){
+                return true;
+            }
+            else if(src_port == a.src_port){
+                if(dst_port < a.dst_port){
+                    return true;
+                }
+                else if(dst_port == a.dst_port){
+                    if(proto < a.proto){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        return false;
+    }
+}
+
+bool FiveTuple::operator==(const FiveTuple &a)const{
+    return (src_ip == a.src_ip) && (dst_ip == a.dst_ip) && (src_port == a.src_port) && (dst_port == a.dst_port) && (proto == a.proto);
+}
+
+bool FiveTuple::operator!=(const FiveTuple &a)const{
+    return !(*this == a);
+}
+
 std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple){
     char src_ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(five_tuple.src_ip), src_ip_str, INET_ADDRSTRLEN);
@@ -188,6 +237,9 @@ std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple){
 std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info){
     os << pkt_info.pkt_time.tv_sec << " " << pkt_info.pkt_time.tv_usec << " ";
     os << pkt_info.flow_id << " " << pkt_info.pkt_len << " " << pkt_info.pkt_type;
+    if (pkt_info.payload_hash != 0){
+        os << " " << pkt_info.payload_hash;
+    }
     return os;
 }
 

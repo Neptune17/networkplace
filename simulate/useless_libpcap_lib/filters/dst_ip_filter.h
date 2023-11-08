@@ -1,3 +1,6 @@
+#ifndef DST_IP_FILTER_H
+#define DST_IP_FILTER_H
+
 #include "abstract_filter.h"
 
 class DstIpFilter: public AbstractFilter{
@@ -11,3 +14,5 @@ class DstIpFilter: public AbstractFilter{
     uint32_t prefix_;
     uint32_t mask_;
 };
+
+#endif

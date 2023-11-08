@@ -12,9 +12,9 @@
 template<typename T>
 class FeatureExtractorTemplate: public AbstractFeatureExtractor{
   public:
-    void append_packet(PktInfo pkt_info) override;
-    void print_feature(FiveTuple five_tuple) override;
-    bool is_ready(FiveTuple five_tuple) override;
+    void append_packet_info(PktInfo pkt_info) override;
+    void print_feature_flow(FiveTuple five_tuple) override;
+    void print_feature_all() override;
   
   protected:
     void set_name(std::string name);
@@ -23,12 +23,12 @@ class FeatureExtractorTemplate: public AbstractFeatureExtractor{
     void print_flow_id(T flow_id);
   
   private:
-    virtual void append_packet_(T flow_id, PktInfo pkt_info) = 0;
-    virtual void print_feature_(T flow_id) = 0;
-    virtual bool is_ready_(T flow_id) = 0;
-    
     T get_flow_id(FiveTuple five_tuple);
-
+    
+    virtual void append_packet_info_(T flow_id, PktInfo pkt_info) = 0;
+    virtual void print_feature_flow_(T flow_id) = 0;
+    virtual void print_feature_all_() = 0;
+    
     std::string name_;
     AbstractFilter* filter_;
     AbstractFlowIdentification<T>* flow_identification_;

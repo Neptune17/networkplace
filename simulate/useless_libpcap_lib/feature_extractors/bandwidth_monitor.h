@@ -14,9 +14,11 @@ class BandwidthMonitor: public FeatureExtractorTemplate<T>{
     BandwidthMonitor(std::string name = std::string("BandwidthMonitor"), AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstIpFlowIdentification(), timeval interval_time = {1, 0});
 
   private:
-    void append_packet_(T flow_id, PktInfo pkt_info) override;
-    void print_feature_(T flow_id) override;
-    bool is_ready_(T flow_id) override;
+    bool is_ready_();
+
+    void append_packet_info_(T flow_id, PktInfo pkt_info) override;
+    void print_feature_flow_(T flow_id) override;
+    void print_feature_all_() override;
 
     std::map<T, uint64_t> packet_count_;
     std::map<T, uint64_t> packet_bytes_;

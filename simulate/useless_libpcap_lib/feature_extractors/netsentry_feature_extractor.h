@@ -16,10 +16,11 @@ class NetsentryFeatureExtractor :public FeatureExtractorTemplate<T>{
   private:
     uint32_t get_inter_pkt_time_(T flow_id, timeval new_pkt_time);
     uint32_t pkt_feature_embed_(uint32_t pkt_len, PktType pkt_type, uint32_t inter_pkt_time);
-
-    void append_packet_(T flow_id, PktInfo pkt_info) override;
-    void print_feature_(T flow_id) override;
-    bool is_ready_(T flow_id) override;
+    bool is_ready_(T flow_id);
+    
+    void append_packet_info_(T flow_id, PktInfo pkt_info) override;
+    void print_feature_flow_(T flow_id) override;
+    void print_feature_all_() override;
 
     MapVec<T, uint32_t> pkt_features_;
     std::map<T, uint32_t> last_pkt_time_;

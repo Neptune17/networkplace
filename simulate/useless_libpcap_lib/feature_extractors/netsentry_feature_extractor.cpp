@@ -55,13 +55,22 @@ uint32_t NetsentryFeatureExtractor<T>::pkt_feature_embed_(uint32_t pkt_len, PktT
 }
 
 template<typename T>
-void NetsentryFeatureExtractor<T>::append_packet_(T flow_id, PktInfo pkt_info){
-    uint32_t inter_packet_time = get_inter_pkt_time_(flow_id, pkt_info.pkt_time);
-    pkt_features_.insert(flow_id, pkt_feature_embed_(pkt_info.pkt_len, pkt_info.pkt_type, inter_packet_time));
+bool NetsentryFeatureExtractor<T>::is_ready_(T flow_id){
+    return pkt_features_.get(flow_id).size() == dft_sequence_length_;
 }
 
 template<typename T>
-void NetsentryFeatureExtractor<T>::print_feature_(T flow_id){
+void NetsentryFeatureExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
+    uint32_t inter_packet_time = get_inter_pkt_time_(flow_id, pkt_info.pkt_time);
+    pkt_features_.insert(flow_id, pkt_feature_embed_(pkt_info.pkt_len, pkt_info.pkt_type, inter_packet_time));
+    if(is_ready_(flow_id)){
+        this->print_feature_flow(pkt_info.flow_id);
+        pkt_features_.clear(flow_id);
+    }
+}
+
+template<typename T>
+void NetsentryFeatureExtractor<T>::print_feature_flow_(T flow_id){
     auto feature_array = pkt_features_.get(flow_id);
     
     const char * error = NULL;
@@ -77,11 +86,18 @@ void NetsentryFeatureExtractor<T>::print_feature_(T flow_id){
     for(int i = 0; i < dft_feature_length_ - 1;i ++){std::cout << fft_result[i].real() << "," << fft_result[i].imag() << ",";}
     std::cout << fft_result[dft_feature_length_ - 1].real() << "," << fft_result[dft_feature_length_ - 1].imag();
     std::cout << "]";
-    
-    pkt_features_.clear(flow_id);
 }
 
 template<typename T>
-bool NetsentryFeatureExtractor<T>::is_ready_(T flow_id){
-    return pkt_features_.get(flow_id).size() == dft_sequence_length_;
+void NetsentryFeatureExtractor<T>::print_feature_all_(){
+    std::cout << "[";
+    for (auto iter = pkt_features_.begin(); iter != pkt_features_.end(); iter++){
+        if (iter != pkt_features_.begin()){
+            std::cout << ",";
+        }
+        std::cout << "{";
+        print_feature_flow_(iter->first);
+        std::cout << "}";
+    }
+    std::cout << "]";
 }

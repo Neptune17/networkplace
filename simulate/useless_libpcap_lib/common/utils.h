@@ -51,6 +51,9 @@ struct FiveTuple {
     }
 
     friend std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple);
+    bool operator<(const FiveTuple& a) const;
+    bool operator==(const FiveTuple& a) const;
+    bool operator!=(const FiveTuple& a) const;
 };
 
 struct PktInfo {
@@ -58,13 +61,15 @@ struct PktInfo {
     uint32_t pkt_len;
     PktType pkt_type;
     timeval pkt_time;
+    uint64_t payload_hash = 0;
     
     PktInfo(){}
-    PktInfo(FiveTuple flow_id, uint32_t pkt_len, PktType pkt_type, timeval pkt_time)
+    PktInfo(FiveTuple flow_id, uint32_t pkt_len, PktType pkt_type, timeval pkt_time, uint64_t payload_hash = 0)
         : flow_id(flow_id), 
           pkt_len(pkt_len), 
           pkt_type(pkt_type), 
-          pkt_time(pkt_time){
+          pkt_time(pkt_time),
+          payload_hash(payload_hash){
     }
 
     friend std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info);
