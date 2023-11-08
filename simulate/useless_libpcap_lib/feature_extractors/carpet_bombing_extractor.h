@@ -14,9 +14,10 @@ class CarpetBombingExtractor: public FeatureExtractorTemplate<T>{
     CarpetBombingExtractor(std::string name = std::string("CarpetBombingExtractor"), AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstPortFlowIdendification());
 
   private:
+    std::vector<T> get_flow_id_list_() override;
+    void print_flow_feature_(T flow_id) override;
     void append_packet_info_(T flow_id, PktInfo pkt_info) override;
-    void print_feature_flow_(T flow_id) override;
-    void print_feature_all_() override;
+    void reset_() override;
 
     std::map<uint64_t, uint32_t> payload_hash_count_;
     std::map<uint64_t, T> payload_hash_flow_id_;

@@ -60,6 +60,16 @@ bool NetsentryFeatureExtractor<T>::is_ready_(T flow_id){
 }
 
 template<typename T>
+std::vector<T> NetsentryFeatureExtractor<T>::get_flow_id_list_(){
+    std::vector<T> flow_id_list;
+    for(auto iter = pkt_features_.data_.begin(); iter != pkt_features_.data_.end(); iter++){
+        if (is_ready_(iter->first))
+            flow_id_list.push_back(iter->first);
+    }
+    return flow_id_list;
+}
+
+template<typename T>
 void NetsentryFeatureExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
     uint32_t inter_packet_time = get_inter_pkt_time_(flow_id, pkt_info.pkt_time);
     pkt_features_.insert(flow_id, pkt_feature_embed_(pkt_info.pkt_len, pkt_info.pkt_type, inter_packet_time));
@@ -70,7 +80,7 @@ void NetsentryFeatureExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_in
 }
 
 template<typename T>
-void NetsentryFeatureExtractor<T>::print_feature_flow_(T flow_id){
+void NetsentryFeatureExtractor<T>::print_flow_feature_(T flow_id){
     auto feature_array = pkt_features_.get(flow_id);
     
     const char * error = NULL;
@@ -78,10 +88,6 @@ void NetsentryFeatureExtractor<T>::print_feature_flow_(T flow_id){
     std::vector<std::complex<double>> fft_result(dft_sequence_length_);
     ret = simple_fft::FFT(feature_array, fft_result, dft_sequence_length_, error);
     
-    std::cout << "\"key\":";
-    this->print_flow_id(flow_id);
-    std::cout << ",";
-    std::cout << "\"value\":";
     std::cout << "[";
     for(int i = 0; i < dft_feature_length_ - 1;i ++){std::cout << fft_result[i].real() << "," << fft_result[i].imag() << ",";}
     std::cout << fft_result[dft_feature_length_ - 1].real() << "," << fft_result[dft_feature_length_ - 1].imag();
@@ -89,15 +95,7 @@ void NetsentryFeatureExtractor<T>::print_feature_flow_(T flow_id){
 }
 
 template<typename T>
-void NetsentryFeatureExtractor<T>::print_feature_all_(){
-    std::cout << "[";
-    for (auto iter = pkt_features_.begin(); iter != pkt_features_.end(); iter++){
-        if (iter != pkt_features_.begin()){
-            std::cout << ",";
-        }
-        std::cout << "{";
-        print_feature_flow_(iter->first);
-        std::cout << "}";
-    }
-    std::cout << "]";
+void NetsentryFeatureExtractor<T>::reset_(){
+    pkt_features_.data_.clear();
+    last_pkt_time_.clear();
 }

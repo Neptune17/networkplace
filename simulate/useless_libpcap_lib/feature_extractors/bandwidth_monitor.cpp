@@ -20,6 +20,26 @@ bool BandwidthMonitor<T>::is_ready_(){
 }
 
 template<typename T>
+std::vector<T> BandwidthMonitor<T>::get_flow_id_list_(){
+    std::vector<T> flow_id_list;
+    for(auto it = packet_count_.begin(); it != packet_count_.end(); it ++){
+        flow_id_list.push_back(it->first);
+    }
+    return flow_id_list;
+}
+
+template<typename T>
+void BandwidthMonitor<T>::print_flow_feature_(T flow_id){
+    std::cout << "{";
+
+    std::cout << "\"pps\":" << packet_count_[flow_id] << ",";
+    
+    std::cout << "\"bps\":" << (packet_bytes_[flow_id] * 8);
+
+    std::cout << "}";
+}
+
+template<typename T>
 void BandwidthMonitor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
     auto packet_count_it = packet_count_.find(flow_id);
     if(packet_count_it == packet_count_.end()){
@@ -36,69 +56,21 @@ void BandwidthMonitor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
         packet_bytes_[flow_id] += (uint64_t)pkt_info.pkt_len;
     }
     current_time_ = pkt_info.pkt_time;
+    
     if(is_ready_()){
-        this->print_feature_all();
+        this->print_feature();
         packet_count_.clear();
         packet_bytes_.clear();
+        last_time_ = timeval_plus(last_time_, interval_time_);
     }
 }
 
 template<typename T>
-void BandwidthMonitor<T>::print_feature_flow_(T flow_id){
-    char dst_ip_str[INET_ADDRSTRLEN];
-
-    std::cout << "\"interval_time\":";
-    std::cout << "\"" << interval_time_.tv_sec << "." << interval_time_.tv_usec << "\"";
-    std::cout << ",";
-
-    std::cout << "\"pps\":";
-    std::cout << "{";
-    auto packet_count_it = packet_count_.find(flow_id);
-    this->print_flow_id(packet_count_it->first);
-    std::cout << ":" << packet_count_it->second;
-    std::cout << "},";
-    
-    std::cout << "\"bps\":";
-    std::cout << "{";
-    auto packet_bytes_it = packet_bytes_.find(flow_id);
-    this->print_flow_id(packet_bytes_it->first);
-    std::cout << ":" << (packet_bytes_it->second * 8);
-    std::cout << "}";
-    
-    last_time_ = timeval_plus(last_time_, interval_time_);
-}
-
-template<typename T>
-void BandwidthMonitor<T>::print_feature_all_(){
-    char dst_ip_str[INET_ADDRSTRLEN];
-
-    std::cout << "\"interval_time\":";
-    std::cout << "\"" << interval_time_.tv_sec << "." << interval_time_.tv_usec << "\"";
-    std::cout << ",";
-
-    std::cout << "\"pps\":";
-    std::cout << "{";
-    for(auto it = packet_count_.begin(); it != packet_count_.end(); it ++){
-        if(it != packet_count_.begin()){
-            std::cout << ",";
-        }
-        this->print_flow_id(it->first);
-        std::cout << ":" << it->second;
-    }
-    std::cout << "},";
-    
-    std::cout << "\"bps\":";
-    std::cout << "{";
-    for(auto it = packet_bytes_.begin(); it != packet_bytes_.end(); it ++){
-        if(it != packet_bytes_.begin()){
-            std::cout << ",";
-        }
-        this->print_flow_id(it->first);    
-        std::cout << ":" << (it->second * 8);
-    }
-    std::cout << "}";
-    
-    last_time_ = timeval_plus(last_time_, interval_time_);
+void BandwidthMonitor<T>::reset_(){
+    packet_count_.clear();
+    packet_bytes_.clear();
+    last_time_ = {0, 0};
+    current_time_ = {0, 0};
 }
 
 template class BandwidthMonitor<uint16_t>;

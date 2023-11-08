@@ -5,9 +5,9 @@
 
 class AbstractFeatureExtractor{
   public:
-    virtual void append_packet_info(PktInfo pkt_info) = 0;
-    virtual void print_feature_flow(FiveTuple five_tuple) = 0;
-    virtual void print_feature_all() = 0;
+    virtual void append_packet(PktInfo pkt_info) = 0;
+    virtual void print_feature() = 0;
+    virtual void reset() = 0;
 };
 
 #endif

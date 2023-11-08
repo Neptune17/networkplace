@@ -200,21 +200,31 @@ int main(){
     //     if(pcap_reader5.is_end())
     //         break;
     // }
-
-    PcapReader pcap_reader6("/root/dataset/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap", true, true);
-
-    CarpetBombingExtractor<uint16_t> extractor = CarpetBombingExtractor<uint16_t>();
-
-    while(true){
-        PktInfo pkt_info = pcap_reader6.get_current_pkt_info();
-
-        extractor.append_packet_info(pkt_info);
-
-        pcap_reader6.generate_next();
-        if(pcap_reader6.is_end())
-            break;
-    }
-
-    extractor.print_feature_all();
     
+    std::vector<std::string> filenames = {
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap",
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap",
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-28-35.cap",
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-33-03.cap",
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_08-17-50.cap",
+        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_test_2023-03-16_00-39-10.cap"
+        };
+
+    for(auto filename: filenames){
+        std::cout << filename << std::endl;
+        PcapReader pcap_reader(filename.c_str(), false, true);
+        CarpetBombingExtractor<uint16_t> extractor = CarpetBombingExtractor<uint16_t>(std::string("CarpetBombingExtractor"), nullptr, new DstPortFlowIdendification());
+
+        while(true){
+            PktInfo pkt_info = pcap_reader.get_current_pkt_info();
+            extractor.append_packet(pkt_info);
+            pcap_reader.generate_next();
+            if(pcap_reader.is_end())
+                break;
+        }
+        extractor.print_feature();
+        std::cout << std::endl;
+
+        
+    }
 }

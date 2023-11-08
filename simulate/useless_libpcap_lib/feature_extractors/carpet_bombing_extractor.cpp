@@ -12,27 +12,8 @@ CarpetBombingExtractor<T>::CarpetBombingExtractor(std::string name, AbstractFilt
 }
 
 template<typename T>
-void CarpetBombingExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
-    payload_hash_count_[pkt_info.payload_hash]++;
-    if (payload_hash_flow_id_.find(pkt_info.payload_hash) != payload_hash_flow_id_.end()){
-        if (payload_hash_flow_id_[pkt_info.payload_hash] != flow_id){
-            std::cout << "payload hash collision: " << pkt_info.payload_hash;
-            this->print_flow_id(payload_hash_flow_id_[pkt_info.payload_hash]);
-            std::cout << " ";
-            this->print_flow_id(flow_id);
-            std::cout << std::endl;
-        }
-    }
-    payload_hash_flow_id_[pkt_info.payload_hash] = flow_id;
-}
-
-template<typename T>
-void CarpetBombingExtractor<T>::print_feature_flow_(T flow_id){
-
-}
-
-template<typename T>
-void CarpetBombingExtractor<T>::print_feature_all_(){
+std::vector<T> CarpetBombingExtractor<T>::get_flow_id_list_(){
+    std::vector<T> flow_id_list;
     for (auto iter = payload_hash_count_.begin(); iter != payload_hash_count_.end(); iter++){
         if(flow_label_.find(payload_hash_flow_id_[iter->first]) == flow_label_.end()){
             flow_label_[payload_hash_flow_id_[iter->first]] = UNCERTAIN;
@@ -54,22 +35,39 @@ void CarpetBombingExtractor<T>::print_feature_all_(){
             }
         }
     }
-    std::cout << "{";
-    bool print_flag_ = false;
     for (auto iter = flow_label_.begin(); iter != flow_label_.end(); iter++){
         if (iter->second == MALICIOUS || iter->second == MALICIOUS_AND_BENIGN){
-            if (print_flag_){
-                std::cout << ",";
-            }
-            print_flag_ = true;
-            this->print_flow_id(iter->first);
-            if (iter->second == MALICIOUS)
-                std::cout << ":\"MALICIOUS\"";
-            else
-                std::cout << ":\"MALICIOUS_AND_BENIGN\"";
+            flow_id_list.push_back(iter->first);
         }
     }
-    std::cout << "}";
+    return flow_id_list;
+}
+
+template<typename T>
+void CarpetBombingExtractor<T>::print_flow_feature_(T flow_id){
+    auto iter = flow_label_.find(flow_id);
+    if (iter->second == MALICIOUS)
+        std::cout << "\"MALICIOUS\"";
+    else if (iter->second == MALICIOUS_AND_BENIGN)
+        std::cout << "\"MALICIOUS_AND_BENIGN\"";
+}
+
+template<typename T>
+void CarpetBombingExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
+    payload_hash_count_[pkt_info.payload_hash]++;
+    if (payload_hash_flow_id_.find(pkt_info.payload_hash) != payload_hash_flow_id_.end()){
+        if (payload_hash_flow_id_[pkt_info.payload_hash] != flow_id){
+            std::cout << "payload hash collision: " << pkt_info << std::endl;
+        }
+    }
+    payload_hash_flow_id_[pkt_info.payload_hash] = flow_id;
+}
+
+template<typename T>
+void CarpetBombingExtractor<T>::reset_(){
+    payload_hash_count_.clear();
+    payload_hash_flow_id_.clear();
+    flow_label_.clear();
 }
 
 template class CarpetBombingExtractor<uint16_t>;

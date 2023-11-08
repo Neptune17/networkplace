@@ -3,34 +3,41 @@
 #include <iostream>
 
 template<typename T>
-void FeatureExtractorTemplate<T>::append_packet_info(PktInfo pkt_info){
-    T flow_id = this->get_flow_id(pkt_info.flow_id);
+void FeatureExtractorTemplate<T>::append_packet(PktInfo pkt_info){
+    T flow_id = flow_identification_->get_flow_id(pkt_info.flow_id);
     if (filter_ == nullptr || filter_->accept(pkt_info)){
-        this->append_packet_info_(flow_id, pkt_info);
+        append_packet_info_(flow_id, pkt_info);
     }
 }
 
 template<typename T>
-void FeatureExtractorTemplate<T>::print_feature_flow(FiveTuple five_tuple){
+void FeatureExtractorTemplate<T>::print_feature(){
+    std::vector<T> flow_id_list = get_flow_id_list_();
     std::cout << "{";
     std::cout << "\"name\":";
     std::cout << "\"" + name_ + "\"";
     std::cout << ",";
-    T flow_id = this->get_flow_id(five_tuple);
-    this->print_feature_flow_(flow_id);
+    std::cout << "\"feature\":";
+    std::cout << "[";
+    for(auto iter = flow_id_list.begin(); iter != flow_id_list.end(); iter++){
+        if(iter != flow_id_list.begin()){
+            std::cout << ",";
+        }
+        T flow_id = *iter;
+        std::cout << "{";
+        flow_identification_->print_flow_id(flow_id);
+        std::cout << ":";
+        print_flow_feature_(flow_id);
+        std::cout << "}";
+    }
+    std::cout << "]";
     std::cout << "}";
     std::cout << std::endl;
 }
 
 template<typename T>
-void FeatureExtractorTemplate<T>::print_feature_all(){
-    std::cout << "{";
-    std::cout << "\"name\":";
-    std::cout << "\"" + name_ + "\"";
-    std::cout << ",";
-    this->print_feature_all_();
-    std::cout << "}";
-    std::cout << std::endl;
+void FeatureExtractorTemplate<T>::reset(){
+    reset_();
 }
 
 template<typename T>
@@ -49,13 +56,22 @@ void FeatureExtractorTemplate<T>::set_flow_identification(AbstractFlowIdentifica
 }
 
 template<typename T>
-void FeatureExtractorTemplate<T>::print_flow_id(T flow_id){
+void FeatureExtractorTemplate<T>::print_flow_feature(FiveTuple five_tuple){
+    T flow_id = flow_identification_->get_flow_id(five_tuple);
+    std::cout << "{";
+    std::cout << "\"name\":";
+    std::cout << "\"" + name_ + "\"";
+    std::cout << ",";
+    std::cout << "\"feature\":";
+    std::cout << "[";
+    std::cout << "{";
     flow_identification_->print_flow_id(flow_id);
-}
-
-template<typename T>
-T FeatureExtractorTemplate<T>::get_flow_id(FiveTuple five_tuple){
-    return flow_identification_->get_flow_id(five_tuple);
+    std::cout << ":";
+    print_flow_feature_(flow_id);
+    std::cout << "}";
+    std::cout << "]";
+    std::cout << "}";
+    std::cout << std::endl;
 }
 
 template class FeatureExtractorTemplate<uint16_t>;

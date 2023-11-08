@@ -23,16 +23,6 @@ StatisticFeatureExtractor<T>::StatisticFeatureExtractor(std::string name, Abstra
 }
 
 template<typename T>
-void StatisticFeatureExtractor<T>::print_all_features(){
-    for(auto iter = pkt_features_.begin(); iter != pkt_features_.end(); iter++){
-        std::cout << "{";
-        this->print_feature_flow_(iter->first);
-        std::cout << "}";
-        std::cout << std::endl;
-    }
-}
-
-template<typename T>
 uint32_t StatisticFeatureExtractor<T>::get_inter_pkt_time_(T flow_id, timeval new_pkt_time){
     uint32_t inter_pkt_time = 0;
     uint32_t int_new_pkt_time = new_pkt_time.tv_sec * 1000000 + new_pkt_time.tv_usec;
@@ -47,6 +37,22 @@ uint32_t StatisticFeatureExtractor<T>::get_inter_pkt_time_(T flow_id, timeval ne
 template<typename T>
 bool StatisticFeatureExtractor<T>::is_ready_(T flow_id){
     return true;
+}
+
+template<typename T>
+std::vector<T> StatisticFeatureExtractor<T>::get_flow_id_list_(){
+    std::vector<T> flow_id_list;
+    for(auto iter = pkt_features_.begin(); iter != pkt_features_.end(); iter++){
+        flow_id_list.push_back(iter->first);
+    }
+    return flow_id_list;
+}
+
+template<typename T>
+void StatisticFeatureExtractor<T>::print_flow_feature_(T flow_id){
+    std::cout << "{";
+    std::cout << pkt_features_[flow_id];
+    std::cout << "}";
 }
 
 template<typename T>
@@ -78,35 +84,16 @@ void StatisticFeatureExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_in
         pkt_features_[flow_id] = new_feature;
     }
     if(is_ready_(flow_id)){
-        this->print_feature_flow(pkt_info.flow_id);
+        this->print_flow_feature(pkt_info.flow_id);
     }
 }
 
 template<typename T>
-void StatisticFeatureExtractor<T>::print_feature_flow_(T flow_id){
-    auto iter = pkt_features_.find(flow_id);
-    std::cout << "\"key\":";
-    this->print_flow_id(flow_id);
-    std::cout << ",";
-    std::cout << "\"value\":";
-    std::cout << "{";
-    std::cout << iter->second;
-    std::cout << "}";
+void StatisticFeatureExtractor<T>::reset_(){
+    pkt_features_.clear();
+    last_pkt_time_.clear();
 }
 
-template<typename T>
-void StatisticFeatureExtractor<T>::print_feature_all_(){
-    std::cout << "[";
-    for (auto iter = pkt_features_.begin(); iter != pkt_features_.end(); iter++){
-        if (iter != pkt_features_.begin()){
-            std::cout << ",";
-        }
-        std::cout << "{";
-        print_feature_flow_(iter->first);
-        std::cout << "}";
-    }
-    std::cout << "]";
-}
-
+template class StatisticFeatureExtractor<uint16_t>;
 template class StatisticFeatureExtractor<uint32_t>;
 template class StatisticFeatureExtractor<FiveTuple>;
