@@ -13,6 +13,7 @@
 #include "src_port_filter.h"
 #include "and_filter.h"
 #include "or_filter.h"
+#include "not_filter.h"
 #include "five_tuple_filter.h"
 #include "dst_ip_flow_identification.h"
 #include "src_ip_flow_identification.h"
@@ -200,15 +201,34 @@ int main(){
     //     if(pcap_reader5.is_end())
     //         break;
     // }
-    
+
+
+
+    // generate clean carpet bombing pcap files ----------------------------------------------------------------------------------------
+    // comment code: dump carpet bombing attacks to different ports in seperate pcap files
+    // filters:
+    // // packets with a payload hash that occurs more than once
+    // // handcrafted filters by checking seperate pcap files
+
     std::vector<std::string> filenames = {
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap",
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap",
-        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-28-35.cap",
-        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-33-03.cap",
-        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_08-17-50.cap",
-        "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_test_2023-03-16_00-39-10.cap"
-        };
+        // "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-28-35.cap", // no carpet bombing
+        // "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_05-33-03.cap", // no carpet bombing
+        // "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_imfsent_2022-06-20_08-17-50.cap", // no carpet bombing
+        // "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_test_2023-03-16_00-39-10.cap"  // no carpet bombing
+    };
+
+    AndFilter filter_for_collcap_adbos_385a_6_2023;
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(43314)); // TCP retransmission
+
+    AndFilter filter_for_collcap_adbos_f0cf_46_2023;
+    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(56039)); // strange behavior: same five tuple udp with repeated payload(every 3 packets)
+
+    std::map<std::string, AbstractFilter*> hand_crafted_filters = {
+        {"/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap", new NotFilter(&filter_for_collcap_adbos_385a_6_2023)},
+        {"/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap", new NotFilter(&filter_for_collcap_adbos_f0cf_46_2023)}
+    };
 
     for(auto filename: filenames){
         std::cout << filename << std::endl;
@@ -225,6 +245,44 @@ int main(){
         extractor.print_feature();
         std::cout << std::endl;
 
-        
+        // packets with a payload hash that occurs more than once
+        CarpetBombingExtractorGeneratedFilter<uint16_t> payload_hash_check_filter = extractor.get_filter();
+
+        AndFilter filter;
+        filter.add_filter(&payload_hash_check_filter);
+        filter.add_filter(hand_crafted_filters[filename]);
+
+        PcapReader pcap_reader2(filename.c_str(), true, true);
+        PcapWriter pcap_writer_all(("result/clean_carpet_bombing_" + filename.substr(filename.find_last_of('/') + 1)).c_str(), 65536);
+        // dump carpet bombing attacks to different ports in seperate pcap files
+        // std::vector<PcapWriter> pcap_writers;
+        // std::map<uint16_t, size_t> dst_port_pcap_writer_index;
+
+        while(true){
+            u_char pkt_content[10000] = {};
+            pcap_pkthdr pkt_header = pcap_pkthdr();
+            pcap_reader2.get_curr_original_pkt(pkt_content, &pkt_header);
+            
+            PktInfo pkt_info = pcap_reader2.get_current_pkt_info();
+            
+            if(filter.accept(pkt_info)){
+                pcap_writer_all.dump_original_pkt(pkt_content, &pkt_header);
+                // if (dst_port_pcap_writer_index.find(pkt_info.flow_id.dst_port) == dst_port_pcap_writer_index.end()){
+                //     std::string subpcapfilename = "result/carpet_bombing_" + filename.substr(filename.find_last_of('/') + 1) + "_" + std::to_string(pkt_info.flow_id.dst_port) + ".pcap";
+                //     // std::cout << subpcapfilename << std::endl;
+                //     pcap_writers.push_back(PcapWriter(subpcapfilename.c_str(), 65536));
+                //     dst_port_pcap_writer_index[pkt_info.flow_id.dst_port] = pcap_writers.size() - 1;
+                // }
+                // pcap_writers[dst_port_pcap_writer_index[pkt_info.flow_id.dst_port]].dump_original_pkt(pkt_content, &pkt_header);
+            }
+            
+            pcap_reader2.generate_next();
+            if(pcap_reader2.is_end())
+                break;
+        }
+        pcap_writer_all.close_dump_file();
+        // for(auto pcap_writer : pcap_writers){
+        //     pcap_writer.close_dump_file();
+        // }
     }
 }

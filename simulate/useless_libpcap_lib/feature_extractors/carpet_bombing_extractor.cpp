@@ -3,12 +3,19 @@
 #include <iostream>
 
 #include "utils.h"
+#include "carpet_bombing_extractor_generated_filter.h"
 
 template<typename T>
 CarpetBombingExtractor<T>::CarpetBombingExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification){
     this->set_name(name);
     this->set_filter(filter);
     this->set_flow_identification(flow_identification);
+    flow_identification_ = flow_identification;
+}
+
+template<typename T>
+CarpetBombingExtractorGeneratedFilter<T> CarpetBombingExtractor<T>::get_filter(){
+    return CarpetBombingExtractorGeneratedFilter<T>(payload_hash_count_, flow_label_, flow_identification_);
 }
 
 template<typename T>
