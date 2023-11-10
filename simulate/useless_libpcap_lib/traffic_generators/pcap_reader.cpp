@@ -7,9 +7,11 @@
 
 #include "utils.h"
 
-PcapReader::PcapReader(const char *pcap_file_dir, bool enable_original_pkt, bool enable_payload_hash_check){
-    enable_original_pkt_ = enable_original_pkt;
+PcapReader::PcapReader(const char *pcap_file_dir, bool enable_payload_hash_check, bool enable_pkt_hash_check, bool enable_original_pkt){
     enable_payload_hash_check_ = enable_payload_hash_check;
+    enable_pkt_hash_check_ = enable_pkt_hash_check;
+    enable_original_pkt_ = enable_original_pkt;
+
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_descr_ = pcap_open_offline(pcap_file_dir, errbuf);
     if (pcap_descr_ == NULL) {
@@ -18,6 +20,7 @@ PcapReader::PcapReader(const char *pcap_file_dir, bool enable_original_pkt, bool
     start_time_ = timeval();
     start_time_ = generate_next();
     curr_pkt_info_.pkt_time = timeval_minus(curr_pkt_info_.pkt_time, start_time_);
+    ip_fragment_reconstruct_.clear();
     is_end_ = false;
 }
 
@@ -34,22 +37,46 @@ timeval PcapReader::generate_next(){
     while(true){
         const u_char *pkt_content;
         pcap_pkthdr *pkt_header = new pcap_pkthdr();
-        pkt_header->caplen = 2048;
         pkt_content = pcap_next(pcap_descr_, pkt_header);
         if(pkt_content == NULL){
             is_end_ = true;
             return pkt_header->ts;
         }
-        curr_pkt_info_ = raw_pkt_to_pkt_info(pkt_header, pkt_content);
+        ExtraPktInfo extra_pkt_info;
+        curr_pkt_info_ = raw_pkt_to_pkt_info(pkt_header, pkt_content, &extra_pkt_info);
         if(curr_pkt_info_.pkt_len == 0){ // ignore non ipv4 packets
             continue;
+        }
+        if(extra_pkt_info.ip_fragment_status == 1){
+            if(ip_fragment_reconstruct_.find(extra_pkt_info.ip_fragment_id) == ip_fragment_reconstruct_.end()){
+                ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id] = curr_pkt_info_;
+            }
+            else{
+                std::cout << "Error from pcap reader: ip fragment id collision: " << "(" << ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id] << ")" << " " << "(" << curr_pkt_info_ << ")" << std::endl;
+            }
+        }
+        else if(extra_pkt_info.ip_fragment_status == 2){
+            if(ip_fragment_reconstruct_.find(extra_pkt_info.ip_fragment_id) == ip_fragment_reconstruct_.end()){
+                std::cout << "Error from pcap reader: ip fragment id not found: " << "(" << curr_pkt_info_ << ")" << std::endl;
+            }
+            else if (curr_pkt_info_.flow_id.src_ip != ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id].flow_id.src_ip || curr_pkt_info_.flow_id.dst_ip != ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id].flow_id.dst_ip){
+                std::cout << "Error from pcap reader: ip fragment with same id but different src ip or dst ip: " << "(" << ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id] << ")" << " " << "(" << curr_pkt_info_ << ")" << std::endl;
+            }
+            else{
+                curr_pkt_info_.flow_id.dst_port = ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id].flow_id.dst_port;
+                curr_pkt_info_.flow_id.src_port = ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id].flow_id.src_port;
+                curr_pkt_info_.pkt_type = ip_fragment_reconstruct_[extra_pkt_info.ip_fragment_id].pkt_type;
+            }
         }
         if(enable_original_pkt_){
             memcpy(curr_pkt_content_, pkt_content, pkt_header->caplen);
             memcpy(&curr_pkt_header_, pkt_header, sizeof(pcap_pkthdr));
         }
+        if(enable_pkt_hash_check_){
+            curr_pkt_info_.pkt_hash = hash_func(pkt_content, 0, std::min(pkt_header->caplen, curr_pkt_info_.pkt_len + 14));
+        }
         if(enable_payload_hash_check_){
-            curr_pkt_info_.payload_hash = get_payload_hash(pkt_content, pkt_header->caplen, 42);
+            curr_pkt_info_.payload_hash = hash_func(pkt_content, extra_pkt_info.payload_start, std::min(pkt_header->caplen, curr_pkt_info_.pkt_len + 14));
         }
         curr_pkt_info_.pkt_time = timeval_minus(curr_pkt_info_.pkt_time, start_time_);
         return curr_pkt_info_.pkt_time;
@@ -64,12 +91,19 @@ void PcapReader::close(){
     pcap_close(pcap_descr_);
 }
 
-uint64_t PcapReader::get_payload_hash(const u_char *pkt_content, uint32_t pkt_len, uint32_t payload_offset){
-    uint64_t hash = 0;
-    uint32_t payload_len = pkt_len - payload_offset;
-    for(uint32_t i = 0; i < payload_len; i += 4){
-        hash = hash * (uint64_t)114 + (((uint64_t)pkt_content[payload_offset + i] << 24) + ((uint64_t)pkt_content[payload_offset + i + 1] << 16) + ((uint64_t)pkt_content[payload_offset + i + 2] << 8) + (uint64_t)pkt_content[payload_offset + i + 3]);
-        hash = hash % (uint64_t)10001145147;
+int64_t PcapReader::hash_func(const u_char *pkt_content, uint32_t start, uint32_t end){
+    int64_t hash = 0;
+    if(start >= end)
+        return -1;
+    int64_t hash_mod = 1001145147ll;
+    int64_t hash_base = 114ll;
+    for(uint32_t i = start; i < end; i += 4){
+        int64_t combine_4B = 0;
+        for(uint32_t j = 0; j < 4; j++){
+            combine_4B = (combine_4B << 8) + ((i + j < end) ? pkt_content[i + j] : 0);
+        }
+        hash = hash * hash_base + combine_4B;
+        hash = hash % hash_mod;
     }
     return hash;
 }

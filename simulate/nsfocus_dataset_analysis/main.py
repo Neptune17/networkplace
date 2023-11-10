@@ -22,70 +22,70 @@ args = argparser.parse_args()
 feature_log_analyze_manager = FeatureLogAnalyzeManager(args.filename)
 
 configs = {
-    "BandwidthMonitor189": {
-        "bps_result": "result/pickle_dump/bps_result189",
-        "pps_result": "result/pickle_dump/pps_result189",
-        "match_prefix": "{\"name\":\"BandwidthMonitor189\","
-    },
+    # "BandwidthMonitor189": {
+    #     "bps_result": "result/pickle_dump/bps_result189",
+    #     "pps_result": "result/pickle_dump/pps_result189",
+    #     "match_prefix": "{\"name\":\"BandwidthMonitor189\","
+    # },
     # "BandwidthMonitor187": {
     #     "bps_result": "result/pickle_dump/bps_result187",
     #     "pps_result": "result/pickle_dump/pps_result187",
     #     "match_prefix": "{\"name\":\"BandwidthMonitor187\","
     # },
-    # "BandwidthMonitor": {
-    #     "bps_result": "result/pickle_dump/bps_result",
-    #     "pps_result": "result/pickle_dump/pps_result",
-    #     "match_prefix": "{\"name\":\"BandwidthMonitor\","
-    # },
-    "BandwidthMonitorSrc189": {
-        "bps_result": "result/pickle_dump/bps_result_src189",
-        "pps_result": "result/pickle_dump/pps_result_src189",
-        "match_prefix": "{\"name\":\"BandwidthMonitorSrc189\","
+    "BandwidthMonitorDstIp": {
+        "bps_result": "result/pickle_dump/bps_result_dst_ip",
+        "pps_result": "result/pickle_dump/pps_result_dst_ip",
+        "match_prefix": "{\"name\":\"BandwidthMonitorDstIp\","
     },
+    # "BandwidthMonitorSrc189": {
+    #     "bps_result": "result/pickle_dump/bps_result_src189",
+    #     "pps_result": "result/pickle_dump/pps_result_src189",
+    #     "match_prefix": "{\"name\":\"BandwidthMonitorSrc189\","
+    # },
     # "BandwidthMonitorSrc187": {
     #     "bps_result": "result/pickle_dump/bps_result_src187",
     #     "pps_result": "result/pickle_dump/pps_result_src187",
     #     "match_prefix": "{\"name\":\"BandwidthMonitorSrc187\","
     # },
-    # "BandwidthMonitorSrc": {
-    #     "bps_result": "result/pickle_dump/bps_result_src",
-    #     "pps_result": "result/pickle_dump/pps_result_src",
-    #     "match_prefix": "{\"name\":\"BandwidthMonitorSrc\","
-    # },
-    "BandwidthMonitorFiveTuple189": {
-        "bps_result": "result/pickle_dump/bps_result_fivetuple189",
-        "pps_result": "result/pickle_dump/pps_result_fivetuple189",
-        "match_prefix": "{\"name\":\"BandwidthMonitorFiveTuple189\","
+    "BandwidthMonitorSrcIp": {
+        "bps_result": "result/pickle_dump/bps_result_src_ip",
+        "pps_result": "result/pickle_dump/pps_result_src_ip",
+        "match_prefix": "{\"name\":\"BandwidthMonitorSrcIp\","
     },
+    # "BandwidthMonitorFiveTuple189": {
+    #     "bps_result": "result/pickle_dump/bps_result_fivetuple189",
+    #     "pps_result": "result/pickle_dump/pps_result_fivetuple189",
+    #     "match_prefix": "{\"name\":\"BandwidthMonitorFiveTuple189\","
+    # },
     # "BandwidthMonitorFiveTuple187": {
     #     "bps_result": "result/pickle_dump/bps_result_fivetuple187",
     #     "pps_result": "result/pickle_dump/pps_result_fivetuple187",
     #     "match_prefix": "{\"name\":\"BandwidthMonitorFiveTuple187\","
     # },
-    # "BandwidthMonitorFiveTuple": {
-    #     "bps_result": "result/pickle_dump/bps_result_fivetuple",
-    #     "pps_result": "result/pickle_dump/pps_result_fivetuple",
-    #     "match_prefix": "{\"name\":\"BandwidthMonitorFiveTuple\","
-    # }
-    "BandwidthMonitorIpPair189": {
-        "bps_result": "result/pickle_dump/bps_result_ippair189",
-        "pps_result": "result/pickle_dump/pps_result_ippair189",
-        "match_prefix": "{\"name\":\"BandwidthMonitorIpPair189\","
+    "BandwidthMonitorFiveTuple": {
+        "bps_result": "result/pickle_dump/bps_result_fivetuple",
+        "pps_result": "result/pickle_dump/pps_result_fivetuple",
+        "match_prefix": "{\"name\":\"BandwidthMonitorFiveTuple\","
     },
+    # "BandwidthMonitorIpPair189": {
+    #     "bps_result": "result/pickle_dump/bps_result_ippair189",
+    #     "pps_result": "result/pickle_dump/pps_result_ippair189",
+    #     "match_prefix": "{\"name\":\"BandwidthMonitorIpPair189\","
+    # },
     # "BandwidthMonitorIpPair187": {
     #     "bps_result": "result/pickle_dump/bps_result_ippair187",
     #     "pps_result": "result/pickle_dump/pps_result_ippair187",
     #     "match_prefix": "{\"name\":\"BandwidthMonitorIpPair187\","
     # },
-    # "BandwidthMonitorIpPair": {
-    #     "bps_result": "result/pickle_dump/bps_result_ippair",
-    #     "pps_result": "result/pickle_dump/pps_result_ippair",
-    #     "match_prefix": "{\"name\":\"BandwidthMonitorIpPair\","
-    # }
+    "BandwidthMonitorIpPair": {
+        "bps_result": "result/pickle_dump/bps_result_ippair",
+        "pps_result": "result/pickle_dump/pps_result_ippair",
+        "match_prefix": "{\"name\":\"BandwidthMonitorIpPair\","
+    }
 }
 
 for config_name in configs.keys():
-    feature_log_analyze_manager.append_analyzer(BandwidthMonitorLogAnalyzer(configs[config_name]["bps_result"], configs[config_name]["pps_result"], config_name, configs[config_name]["match_prefix"]))
+    feature_log_analyze_manager.append_analyzer(BandwidthMonitorLogAnalyzer(config_name, configs[config_name]["match_prefix"], 0.1, configs[config_name]["bps_result"], configs[config_name]["pps_result"]))
 
 feature_log_analyze_manager.run()
 
@@ -163,7 +163,7 @@ for config_name in configs.keys():
 temp_dict = {}
 src_aggr = {}
 dst_aggr = {}
-bandwidth_pps = pickle.load(open(configs["BandwidthMonitorFiveTuple189"]["pps_result"], "rb"))
+bandwidth_pps = pickle.load(open(configs["BandwidthMonitorFiveTuple"]["pps_result"], "rb"))
 del bandwidth_pps["x"]
 for five_tuple_str in bandwidth_pps.keys():
     if bandwidth_pps[five_tuple_str][9] == 0:

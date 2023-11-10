@@ -61,18 +61,26 @@ struct PktInfo {
     uint32_t pkt_len;
     PktType pkt_type;
     timeval pkt_time;
-    uint64_t payload_hash = 0;
+    int64_t pkt_hash = -1;
+    int64_t payload_hash = -1;
     
     PktInfo(){}
-    PktInfo(FiveTuple flow_id, uint32_t pkt_len, PktType pkt_type, timeval pkt_time, uint64_t payload_hash = 0)
+    PktInfo(FiveTuple flow_id, uint32_t pkt_len, PktType pkt_type, timeval pkt_time, int64_t pkt_hash = -1, int64_t payload_hash = -1)
         : flow_id(flow_id), 
           pkt_len(pkt_len), 
           pkt_type(pkt_type), 
           pkt_time(pkt_time),
+          pkt_hash(pkt_hash),
           payload_hash(payload_hash){
     }
 
     friend std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info);
+};
+
+struct ExtraPktInfo {
+    uint16_t ip_fragment_status;
+    uint16_t ip_fragment_id;
+    uint32_t payload_start;
 };
 
 class pkt_info_template {
@@ -108,7 +116,7 @@ timeval timeval_minus(const timeval &a, const timeval &b);
 timeval timeval_plus(const timeval &a, const timeval &b);
 bool timeval_less(const timeval &a, const timeval &b);
 
-PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content);
+PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content, ExtraPktInfo *extra_pkt_info);
 void pkt_info_to_raw_pkt(PktInfo pkt_info, u_char *pkt_content_template, uint32_t capture_length, pcap_pkthdr *pkt_header, u_char *pkt_content);
 
 uint32_t ip_str_to_uint(char* str_ip);

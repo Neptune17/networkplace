@@ -22,8 +22,8 @@ class CarpetBombingExtractor: public FeatureExtractorTemplate<T>{
     void append_packet_info_(T flow_id, PktInfo pkt_info) override;
     void reset_() override;
 
-    std::map<uint64_t, uint32_t> payload_hash_count_;
-    std::map<uint64_t, T> payload_hash_flow_id_;
+    std::map<int64_t, uint32_t> payload_hash_count_;
+    std::map<int64_t, T> payload_hash_flow_id_;
     std::map<T, uint32_t> flow_label_;
     
     AbstractFlowIdentification<T>* flow_identification_; // UGLY

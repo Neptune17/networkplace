@@ -10,6 +10,7 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
 
 const PktInfo pkt_info_template::syn_tcp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, PktType(false, true, false, true, false, false, false), timeval());
 const PktInfo pkt_info_template::udp = PktInfo(FiveTuple(0, 0, 0, 0, 0), 0, PktType(true, false, false, false, false, false, false), timeval());
@@ -56,7 +57,7 @@ bool timeval_less(const timeval &a, const timeval &b){
     }
 }
 
-PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content){
+PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content, ExtraPktInfo *extra_pkt_info){
     PktInfo pkt_info;
     pkt_info.pkt_len = 0;
     const struct ether_header *ethernet_header;
@@ -73,12 +74,26 @@ PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content){
         pkt_info.pkt_len = ntohs(ip_header->ip_len);
         pkt_info.pkt_time = pkt_header->ts;
 
+        if ((ip_header->ip_off & IP_MF) && ((ntohs(ip_header->ip_off) & IP_OFFMASK) == 0)){
+            extra_pkt_info->ip_fragment_status = 1;
+            extra_pkt_info->ip_fragment_id = ntohs(ip_header->ip_id);
+        }
+        else if ((ntohs(ip_header->ip_off) & IP_OFFMASK) != 0){
+            extra_pkt_info->ip_fragment_status = 2;
+            extra_pkt_info->ip_fragment_id = ntohs(ip_header->ip_id);
+        }
+
+        if ((ntohs(ip_header->ip_off) & IP_OFFMASK) != 0){
+            return pkt_info;
+        }
         if (ip_header->ip_p == IPPROTO_UDP){
             udp_header = (struct udphdr*)(pkt_content + sizeof(struct ether_header) + sizeof(struct ip));
             pkt_info.flow_id.src_port = ntohs(udp_header->uh_sport);
             pkt_info.flow_id.dst_port = ntohs(udp_header->uh_dport);
             
             pkt_info.pkt_type.udp = true;
+
+            extra_pkt_info->payload_start = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);
         }
         if (ip_header->ip_p == IPPROTO_TCP){
             tcp_header = (struct tcphdr*)(pkt_content + sizeof(struct ether_header) + sizeof(struct ip));
@@ -91,9 +106,13 @@ PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content){
             if(tcp_header->fin){pkt_info.pkt_type.tcp_fin = true;}
             if(tcp_header->rst){pkt_info.pkt_type.tcp_rst = true;}
             if(tcp_header->ack){pkt_info.pkt_type.tcp_ack = true;}
+
+            extra_pkt_info->payload_start = sizeof(struct ether_header) + sizeof(struct ip) + tcp_header->th_off * 4;
         }
         if (ip_header->ip_p == IPPROTO_ICMP){
             pkt_info.pkt_type.icmp = true;
+
+            extra_pkt_info->payload_start = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct icmphdr);
         }
     }
 
@@ -237,9 +256,8 @@ std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple){
 std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info){
     os << pkt_info.pkt_time.tv_sec << " " << pkt_info.pkt_time.tv_usec << " ";
     os << pkt_info.flow_id << " " << pkt_info.pkt_len << " " << pkt_info.pkt_type;
-    if (pkt_info.payload_hash != 0){
-        os << " " << pkt_info.payload_hash;
-    }
+    os << " " << pkt_info.pkt_hash;
+    os << " " << pkt_info.payload_hash;
     return os;
 }
 

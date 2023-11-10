@@ -20,3 +20,9 @@ bool AndFilter::accept(PktInfo pkt_info){
     }
     return true;
 }
+
+void AndFilter::reset(){
+    for (auto filter: filters_){
+        filter->reset();
+    }
+}

@@ -61,10 +61,12 @@ void CarpetBombingExtractor<T>::print_flow_feature_(T flow_id){
 
 template<typename T>
 void CarpetBombingExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_info){
+    if(pkt_info.payload_hash == -1)
+        return;
     payload_hash_count_[pkt_info.payload_hash]++;
     if (payload_hash_flow_id_.find(pkt_info.payload_hash) != payload_hash_flow_id_.end()){
         if (payload_hash_flow_id_[pkt_info.payload_hash] != flow_id){
-            std::cout << "payload hash collision: " << pkt_info << std::endl;
+            std::cout << "Error from carpet bombing extractor: payload hash collision: " << pkt_info << std::endl;
         }
     }
     payload_hash_flow_id_[pkt_info.payload_hash] = flow_id;

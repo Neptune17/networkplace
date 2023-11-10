@@ -13,6 +13,7 @@ class OrFilter: public AbstractFilter{
     void add_filter(AbstractFilter* filter);
 
     bool accept(PktInfo pkt_info) override;
+    void reset() override;
 
   private:
     std::vector<AbstractFilter*> filters_;

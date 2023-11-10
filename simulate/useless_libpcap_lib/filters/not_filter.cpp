@@ -7,3 +7,7 @@ NotFilter::NotFilter(AbstractFilter* filter){
 bool NotFilter::accept(PktInfo pkt_info){
     return !filter_->accept(pkt_info);
 }
+
+void NotFilter::reset(){
+    filter_->reset();
+}

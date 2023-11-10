@@ -5,7 +5,7 @@
 #include "utils.h"
 
 template<typename T>
-CarpetBombingExtractorGeneratedFilter<T>::CarpetBombingExtractorGeneratedFilter(std::map<uint64_t, uint32_t> payload_hash_count, std::map<T, uint32_t> flow_label, AbstractFlowIdentification<T>* flow_identification){
+CarpetBombingExtractorGeneratedFilter<T>::CarpetBombingExtractorGeneratedFilter(std::map<int64_t, uint32_t> payload_hash_count, std::map<T, uint32_t> flow_label, AbstractFlowIdentification<T>* flow_identification){
     this->payload_hash_count_ = payload_hash_count;
     this->flow_label_ = flow_label;
     this->flow_identification_ = flow_identification;
@@ -21,6 +21,11 @@ bool CarpetBombingExtractorGeneratedFilter<T>::accept(PktInfo pkt_info){
         }
     }
     return false;
+}
+
+template<typename T>
+void CarpetBombingExtractorGeneratedFilter<T>::reset(){
+    // do nothing
 }
 
 template class CarpetBombingExtractorGeneratedFilter<uint16_t>;

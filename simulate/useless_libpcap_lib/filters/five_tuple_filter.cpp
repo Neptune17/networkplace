@@ -18,3 +18,7 @@ FiveTupleFilter::FiveTupleFilter(char* src_ip, char* dst_ip, uint16_t src_port, 
 bool FiveTupleFilter::accept(PktInfo pkt_info){
     return filter_.accept(pkt_info);
 }
+
+void FiveTupleFilter::reset(){
+    filter_.reset();
+}

@@ -15,3 +15,7 @@ SrcIpFilter::SrcIpFilter(uint32_t prefix, uint32_t prefix_len){
 bool SrcIpFilter::accept(PktInfo pkt_info){
     return prefix_match(pkt_info.flow_id.src_ip, prefix_, mask_);
 }
+
+void SrcIpFilter::reset(){
+    // Do nothing
+}

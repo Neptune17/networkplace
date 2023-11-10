@@ -8,6 +8,7 @@ class ProtoFilter: public AbstractFilter{
     ProtoFilter(uint8_t proto);
 
     bool accept(PktInfo pkt_info) override;
+    void reset() override;
 
   private:
     uint8_t proto_;

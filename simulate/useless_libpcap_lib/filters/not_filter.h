@@ -8,6 +8,7 @@ class NotFilter: public AbstractFilter{
     NotFilter(AbstractFilter* filter);
 
     bool accept(PktInfo pkt_info) override;
+    void reset() override;
     
   private:
     AbstractFilter* filter_;

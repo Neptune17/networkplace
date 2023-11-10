@@ -15,3 +15,7 @@ SrcPortFilter::SrcPortFilter(uint16_t min_port, uint16_t max_port){
 bool SrcPortFilter::accept(PktInfo pkt_info){
     return ((pkt_info.flow_id.src_port >= min_port_) && (pkt_info.flow_id.src_port <= max_port_));
 }
+
+void SrcPortFilter::reset(){
+    // Do nothing
+}

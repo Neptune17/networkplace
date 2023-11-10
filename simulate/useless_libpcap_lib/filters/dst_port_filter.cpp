@@ -15,3 +15,7 @@ DstPortFilter::DstPortFilter(uint16_t min_port, uint16_t max_port){
 bool DstPortFilter::accept(PktInfo pkt_info){
     return ((pkt_info.flow_id.dst_port >= min_port_) && (pkt_info.flow_id.dst_port <= max_port_));
 }
+
+void DstPortFilter::reset(){
+    // do nothing
+}

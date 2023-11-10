@@ -3,48 +3,48 @@ import os
 import pickle
 
 class BandwidthMonitorLogAnalyzer(object):
-    def __init__(self, bps_result_file_name, pps_result_file_name, name = "BandwidthMonitorLogAnalyzer", match_prefix = "{\"name\":\"BandwidthMonitor\","):
+    def __init__(self, name, match_prefix, interval_time, bps_pickle_dump_file_name, pps_pickle_dump_file_name):
         self.name = name
         self.match_prefix = match_prefix
-        self.bps_result_file_name = bps_result_file_name
-        self.pps_result_file_name = pps_result_file_name
+        self.interval_time = interval_time
+        self.bps_pickle_dump_file_name = bps_pickle_dump_file_name
+        self.pps_pickle_dump_file_name = pps_pickle_dump_file_name
+        
         self.bandwidth_bps = {}
         self.bandwidth_pps = {}
-        self.interval_time = 0
         self.interval_count = 0
 
-    def parse_interval_time(self, strintervaltime):
-        sec = strintervaltime.split('.')[0]
-        usec = strintervaltime.split('.')[1]
-        return float(sec) + float(usec) / 1000000.0
-
     def need_update(self, log_file_name):
-        if os.path.basename(self.bps_result_file_name) not in os.listdir(os.path.dirname(self.bps_result_file_name)):
+        if os.path.basename(self.bps_pickle_dump_file_name) not in os.listdir(os.path.dirname(self.bps_pickle_dump_file_name)):
             return True
-        if os.path.basename(self.pps_result_file_name) not in os.listdir(os.path.dirname(self.pps_result_file_name)):
+        if os.path.basename(self.pps_pickle_dump_file_name) not in os.listdir(os.path.dirname(self.pps_pickle_dump_file_name)):
             return True
         log_file_modify_time = os.path.getmtime(log_file_name)
-        bps_result_file_modify_time = os.path.getmtime(self.bps_result_file_name)
-        pps_result_file_modify_time = os.path.getmtime(self.pps_result_file_name)
+        bps_result_file_modify_time = os.path.getmtime(self.bps_pickle_dump_file_name)
+        pps_result_file_modify_time = os.path.getmtime(self.pps_pickle_dump_file_name)
         if bps_result_file_modify_time >= log_file_modify_time and pps_result_file_modify_time >= log_file_modify_time:
             return False
         return True
     
     def parse_str_feature(self, str_feature_log):
-        feature_log = json.loads(str_feature_log)
-        self.interval_time = self.parse_interval_time(feature_log['interval_time'])
-        for flow_id in feature_log['pps'].keys():
+        features = json.loads(str_feature_log)["feature"]
+        for flow_id in features.keys():
             if flow_id not in self.bandwidth_pps.keys():
                 self.bandwidth_pps[flow_id] = []
-            while len(self.bandwidth_pps[flow_id]) < self.interval_count:
-                self.bandwidth_pps[flow_id].append(0)
-            self.bandwidth_pps[flow_id].append(feature_log['pps'][flow_id] / self.interval_time)
-        for flow_id in feature_log['bps'].keys():
             if flow_id not in self.bandwidth_bps.keys():
                 self.bandwidth_bps[flow_id] = []
+            while len(self.bandwidth_pps[flow_id]) < self.interval_count:
+                self.bandwidth_pps[flow_id].append(0)
+            self.bandwidth_pps[flow_id].append(features[flow_id]['pps'] / self.interval_time)
             while len(self.bandwidth_bps[flow_id]) < self.interval_count:
                 self.bandwidth_bps[flow_id].append(0)
-            self.bandwidth_bps[flow_id].append(feature_log['bps'][flow_id] / self.interval_time)
+            self.bandwidth_bps[flow_id].append(features[flow_id]['bps'] / self.interval_time)
+        # for flow_id in features['bps'].keys():
+        #     if flow_id not in self.bandwidth_bps.keys():
+        #         self.bandwidth_bps[flow_id] = []
+        #     while len(self.bandwidth_bps[flow_id]) < self.interval_count:
+        #         self.bandwidth_bps[flow_id].append(0)
+        #     self.bandwidth_bps[flow_id].append(features['bps'][flow_id] / self.interval_time)
         self.interval_count += 1
 
     def dump_feature(self):
@@ -56,10 +56,10 @@ class BandwidthMonitorLogAnalyzer(object):
                 self.bandwidth_bps[flow_id].append(0)
         self.bandwidth_bps["x"] = [self.interval_time * i for i in range(self.interval_count)]
         self.bandwidth_pps["x"] = [self.interval_time * i for i in range(self.interval_count)]
-        f = open(self.pps_result_file_name, "wb")
+        f = open(self.pps_pickle_dump_file_name, "wb")
         pickle.dump(self.bandwidth_pps, f)
         f.close()
-        f = open(self.bps_result_file_name, "wb")
+        f = open(self.bps_pickle_dump_file_name, "wb")
         pickle.dump(self.bandwidth_bps, f)
         f.close()
 

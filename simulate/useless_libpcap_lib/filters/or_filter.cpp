@@ -23,3 +23,9 @@ bool OrFilter::accept(PktInfo pkt_info){
     }
     return false;
 }
+
+void OrFilter::reset(){
+    for (auto filter: filters_){
+        filter->reset();
+    }
+}

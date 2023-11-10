@@ -6,6 +6,7 @@
 class AbstractFilter{
   public:
     virtual bool accept(PktInfo pkt_info) = 0;
+    virtual void reset() = 0;
 };
 
 #endif

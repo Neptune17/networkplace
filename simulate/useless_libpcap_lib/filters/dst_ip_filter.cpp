@@ -15,3 +15,7 @@ DstIpFilter::DstIpFilter(uint32_t prefix, uint32_t prefix_len){
 bool DstIpFilter::accept(PktInfo pkt_info){
     return prefix_match(pkt_info.flow_id.dst_ip, prefix_, mask_);
 }
+
+void DstIpFilter::reset(){
+    // do nothing
+}

@@ -18,19 +18,17 @@ void FeatureExtractorTemplate<T>::print_feature(){
     std::cout << "\"" + name_ + "\"";
     std::cout << ",";
     std::cout << "\"feature\":";
-    std::cout << "[";
+    std::cout << "{";
     for(auto iter = flow_id_list.begin(); iter != flow_id_list.end(); iter++){
         if(iter != flow_id_list.begin()){
             std::cout << ",";
         }
         T flow_id = *iter;
-        std::cout << "{";
         flow_identification_->print_flow_id(flow_id);
         std::cout << ":";
         print_flow_feature_(flow_id);
-        std::cout << "}";
     }
-    std::cout << "]";
+    std::cout << "}";
     std::cout << "}";
     std::cout << std::endl;
 }
@@ -63,13 +61,11 @@ void FeatureExtractorTemplate<T>::print_flow_feature(FiveTuple five_tuple){
     std::cout << "\"" + name_ + "\"";
     std::cout << ",";
     std::cout << "\"feature\":";
-    std::cout << "[";
     std::cout << "{";
     flow_identification_->print_flow_id(flow_id);
     std::cout << ":";
     print_flow_feature_(flow_id);
     std::cout << "}";
-    std::cout << "]";
     std::cout << "}";
     std::cout << std::endl;
 }
