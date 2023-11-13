@@ -2,7 +2,7 @@ import argparse
 
 import sys 
 sys.path.append("..") 
-from useless_python_lib.feature_log_analyzer import FeatureLogAnalyzeManager
+from simulate.useless_python_lib.feature_log_analyze_manager import FeatureLogAnalyzeManager
 from useless_python_lib.bandwidth_monitor_log_analyzer import BandwidthMonitorLogAnalyzer
 
 argparser = argparse.ArgumentParser()

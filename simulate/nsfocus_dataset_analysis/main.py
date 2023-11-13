@@ -1,9 +1,9 @@
 import argparse
 
 import sys 
-sys.path.append("..") 
-from useless_python_lib.feature_log_analyzer import FeatureLogAnalyzeManager
-from useless_python_lib.bandwidth_monitor_log_analyzer import BandwidthMonitorLogAnalyzer
+sys.path.append("../useless_python_lib") 
+from feature_log_analyze_manager import FeatureLogAnalyzeManager
+from bandwidth_monitor_log_analyzer import BandwidthMonitorLogAnalyzer
 
 import os
 if not os.path.exists("result"):
@@ -85,7 +85,7 @@ configs = {
 }
 
 for config_name in configs.keys():
-    feature_log_analyze_manager.append_analyzer(BandwidthMonitorLogAnalyzer(config_name, configs[config_name]["match_prefix"], 0.1, configs[config_name]["bps_result"], configs[config_name]["pps_result"]))
+    feature_log_analyze_manager.append_analyzer(BandwidthMonitorLogAnalyzer(config_name, configs[config_name]["bps_result"], configs[config_name]["pps_result"], 0.1))
 
 feature_log_analyze_manager.run()
 
