@@ -20,6 +20,7 @@
 #include "five_tuple_flow_identification.h"
 #include "ip_pair_flow_identification.h"
 #include "carpet_bombing_extractor.h"
+#include "feature_writer.h"
 
 int main(){
 
@@ -29,6 +30,7 @@ int main(){
     // // packets with a payload hash that occurs more than once
     // // handcrafted filters by checking seperate pcap files
 
+    bool dump_seperate_pcap = false;
     std::vector<std::string> orginial_pcap_filenames = {
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap",
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap",
@@ -38,11 +40,20 @@ int main(){
         // "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_test_2023-03-16_00-39-10.cap"  // no carpet bombing
     };
 
-    AndFilter filter_for_collcap_adbos_385a_6_2023;
+    OrFilter filter_for_collcap_adbos_385a_6_2023;
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(38446)); // not enough packets, targeting single IP
     filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(43314)); // TCP retransmission
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(43549)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(44102)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(48870)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(51455)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_385a_6_2023.add_filter(new DstPortFilter(58870)); // not enough packets, targeting single IP
 
-    AndFilter filter_for_collcap_adbos_f0cf_46_2023;
-    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(56039)); // strange behavior: same five tuple udp with repeated payload(every 3 packets)
+    OrFilter filter_for_collcap_adbos_f0cf_46_2023;
+    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(846)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(1025)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(50435)); // not enough packets, targeting single IP
+    filter_for_collcap_adbos_f0cf_46_2023.add_filter(new DstPortFilter(56039)); // strange behavior: same five tuple udp with repeated payload(every 3 packets) && targetting single IP
 
     std::map<std::string, AbstractFilter*> hand_crafted_filters = {
         {"/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap", new NotFilter(&filter_for_collcap_adbos_385a_6_2023)},
@@ -52,7 +63,7 @@ int main(){
     for(auto filename: orginial_pcap_filenames){
         std::cout << filename << std::endl;
         PcapReader pcap_reader(filename.c_str(), true, true, false);
-        CarpetBombingExtractor<uint16_t> extractor = CarpetBombingExtractor<uint16_t>(std::string("CarpetBombingExtractor"), nullptr, new DstPortFlowIdendification());
+        CarpetBombingExtractor<uint16_t> extractor = CarpetBombingExtractor<uint16_t>(std::string("CarpetBombingExtractor"), nullptr, nullptr, new DstPortFlowIdendification());
 
         while(true){
             PktInfo pkt_info = pcap_reader.get_current_pkt_info();
@@ -72,7 +83,7 @@ int main(){
 
         PcapReader pcap_reader2(filename.c_str(), true, true, true);
         PcapWriter pcap_writer_all(("result/clean_carpet_bombing_" + filename.substr(filename.find_last_of('/') + 1)).c_str(), 65536);
-        // // dump carpet bombing attacks to different ports in seperate pcap files
+        // dump carpet bombing attacks to different ports in seperate pcap files
         std::vector<PcapWriter> pcap_writers;
         std::map<uint16_t, size_t> dst_port_pcap_writer_index;
 
@@ -85,13 +96,15 @@ int main(){
             
             if(filter.accept(pkt_info)){
                 pcap_writer_all.dump_original_pkt(pkt_content, &pkt_header);
-                if (dst_port_pcap_writer_index.find(pkt_info.flow_id.dst_port) == dst_port_pcap_writer_index.end()){
-                    std::string subpcapfilename = "result/carpet_bombing_" + filename.substr(filename.find_last_of('/') + 1) + "_" + std::to_string(pkt_info.flow_id.dst_port) + ".pcap";
-                    // std::cout << subpcapfilename << std::endl;
-                    pcap_writers.push_back(PcapWriter(subpcapfilename.c_str(), 65536));
-                    dst_port_pcap_writer_index[pkt_info.flow_id.dst_port] = pcap_writers.size() - 1;
+                if (dump_seperate_pcap){
+                    if (dst_port_pcap_writer_index.find(pkt_info.flow_id.dst_port) == dst_port_pcap_writer_index.end()){
+                        std::string subpcapfilename = "result/carpet_bombing_" + filename.substr(filename.find_last_of('/') + 1) + "_" + std::to_string(pkt_info.flow_id.dst_port) + ".pcap";
+                        // std::cout << subpcapfilename << std::endl;
+                        pcap_writers.push_back(PcapWriter(subpcapfilename.c_str(), 65536));
+                        dst_port_pcap_writer_index[pkt_info.flow_id.dst_port] = pcap_writers.size() - 1;
+                    }
+                    pcap_writers[dst_port_pcap_writer_index[pkt_info.flow_id.dst_port]].dump_original_pkt(pkt_content, &pkt_header);
                 }
-                pcap_writers[dst_port_pcap_writer_index[pkt_info.flow_id.dst_port]].dump_original_pkt(pkt_content, &pkt_header);
             }
             
             pcap_reader2.generate_next();
@@ -104,6 +117,7 @@ int main(){
         }
     }
 
+    // carpet bombing analysis ----------------------------------------------------------------------------------------
     std::vector<std::string> clean_pcap_filenames = {
         "/root/networkplace/simulate/nsfocus_dataset_analysis/result/clean_carpet_bombing_collcap_adbos_385a_6_2023-03-19_19-58-12.cap",
         "/root/networkplace/simulate/nsfocus_dataset_analysis/result/clean_carpet_bombing_collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap"
@@ -112,44 +126,27 @@ int main(){
     for(auto filename : clean_pcap_filenames){
         std::cout << filename << std::endl;
         PcapReader pcap_reader(filename.c_str());
-        MapVec<uint32_t, PktInfo> src_ip_aggr;
-        MapVec<uint32_t, PktInfo> dst_ip_aggr;
+        FeatureWriter feature_writer(std::string("result/") + filename.substr(filename.find_last_of('/') + 1).c_str() + ".log");
 
         //DST IP
-        // BandwidthMonitor<uint32_t> bandwidth_monitor_189 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitor189"), new DstIpFilter("189.0.0.0", 8), new DstIpFlowIdentification(), {0,100000});
-        // BandwidthMonitor<uint32_t> bandwidth_monitor_187 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitor187"), new DstIpFilter("187.0.0.0", 8), new DstIpFlowIdentification(), {0,100000});
-        BandwidthMonitor<uint32_t> bandwidth_monitor = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitorDstIp"), nullptr, new DstIpFlowIdentification(), {0,100000});
-        //SRC IP
-        // BandwidthMonitor<uint32_t> bandwidth_monitor_src_189 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitorSrc189"), new DstIpFilter("189.0.0.0", 8), new SrcIpFlowIdentification(), {0,100000});
-        // BandwidthMonitor<uint32_t> bandwidth_monitor_src_187 = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitorSrc187"), new DstIpFilter("187.0.0.0", 8), new SrcIpFlowIdentification(), {0,100000});
-        BandwidthMonitor<uint32_t> bandwidth_monitor_src = BandwidthMonitor<uint32_t>(std::string("BandwidthMonitorSrcIp"), nullptr, new SrcIpFlowIdentification(), {0,100000});
-        //five tuple
-        // BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple_189 = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorFiveTuple189"), new DstIpFilter("189.0.0.0", 8), new FiveTupleFlowIdentification(), {0,100000});
-        // BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple_187 = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorFiveTuple187"), new DstIpFilter("187.0.0.0", 8), new FiveTupleFlowIdentification(), {0,100000});
-        BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorFiveTuple"), nullptr, new FiveTupleFlowIdentification(), {0,100000});
-        //ip pair
-        // BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair_189 = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorIpPair189"), new DstIpFilter("189.0.0.0", 8), new IpPairFlowIdentification(), {0,100000});
-        // BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair_187 = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorIpPair187"), new DstIpFilter("187.0.0.0", 8), new IpPairFlowIdentification(), {0,100000});
-        BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair = BandwidthMonitor<FiveTuple>(std::string("BandwidthMonitorIpPair"), nullptr, new IpPairFlowIdentification(), {0,100000});
+        BandwidthMonitor<uint32_t> bandwidth_monitor_dst = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorDstIp"), &feature_writer, nullptr, new DstIpFlowIdentification());
+        // SRC IP
+        BandwidthMonitor<uint32_t> bandwidth_monitor_src = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorSrcIp"), &feature_writer, nullptr, new SrcIpFlowIdentification());
+        // // five tuple
+        // BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorFiveTuple"), &feature_writer, nullptr, new FiveTupleFlowIdentification());
+        // ip pair
+        BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorIpPair"), &feature_writer, nullptr, new IpPairFlowIdentification());
 
         std::vector<AbstractFeatureExtractor*> feature_extractors;
-        // feature_extractors.push_back(&bandwidth_monitor_189);
-        // feature_extractors.push_back(&bandwidth_monitor_187);
-        feature_extractors.push_back(&bandwidth_monitor);
-        // feature_extractors.push_back(&bandwidth_monitor_src_189);
-        // feature_extractors.push_back(&bandwidth_monitor_src_187);
+        feature_extractors.push_back(&bandwidth_monitor_dst);
         feature_extractors.push_back(&bandwidth_monitor_src);
-        // feature_extractors.push_back(&bandwidth_monitor_fivetuple_189);
-        // feature_extractors.push_back(&bandwidth_monitor_fivetuple_187);
-        feature_extractors.push_back(&bandwidth_monitor_fivetuple);
-        // feature_extractors.push_back(&bandwidth_monitor_ippair_189);
-        // feature_extractors.push_back(&bandwidth_monitor_ippair_187);
+        // feature_extractors.push_back(&bandwidth_monitor_fivetuple);
         feature_extractors.push_back(&bandwidth_monitor_ippair);
 
         while(true){
             PktInfo pkt_info = pcap_reader.get_current_pkt_info();
-            src_ip_aggr.insert(pkt_info.flow_id.src_ip, pkt_info);
-            dst_ip_aggr.insert(pkt_info.flow_id.dst_ip, pkt_info);
+
+            // std::cout << pkt_info << std::endl;
 
             for(auto feature_extractor : feature_extractors){
                 feature_extractor->append_packet(pkt_info);

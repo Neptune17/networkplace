@@ -20,12 +20,13 @@ int main(){
     TrafficMixer traffic_mixer;
     
     PcapReader pcap_reader("/root/dataset/202006101400.pcap");
-    traffic_mixer.add_traffic_generator(&pcap_reader);
+    // traffic_mixer.add_traffic_generator(&pcap_reader);
 
     PktInfo template_packet_info = pkt_info_template::syn_tcp;
+    template_packet_info.flow_id.src_ip = 0x0100000B;
     template_packet_info.flow_id.dst_ip = 0x0100000A;
-    template_packet_info.pkt_len = 40;
-    TrafficGenerator traffic_generator(template_packet_info, {10,0}, {50,0});
+    template_packet_info.pkt_len = 1400;
+    TrafficGenerator traffic_generator(template_packet_info, {0,0}, {50,0});
     traffic_generator.add_strategy(new ConstInterPacketTimeStrategy({0,1}));
     traffic_generator.add_strategy(new RandomSrcIpStrategy());
     traffic_generator.add_strategy(new RandomSrcPortStrategy());
@@ -39,29 +40,30 @@ int main(){
 
     PcapWriter pcap_writer("result/test.pcap");
 
-    std::vector<AbstractFeatureExtractor*> feature_extractors;
-    feature_extractors.push_back(new BandwidthMonitor({1,0}, "BandwidthMonitor"));
-    std::map<uint32_t, uint32_t> flow_id_map;
-    for(int i = 0; i < 64; i++){
-        flow_id_map[0x0100000A + (i << 24)] = 1;
-    }
-    feature_extractors.push_back(new BandwidthMonitor(flow_id_map, {1,0}, "BandwidthMonitor_Aggr"));
-    // feature_extractors.push_back(new StatisticFeatureExtractor());
-    // feature_extractors.push_back(new NetsentryFeatureExtractor());
+    // std::vector<AbstractFeatureExtractor*> feature_extractors;
+    // feature_extractors.push_back(new BandwidthMonitor({1,0}, "BandwidthMonitor"));
+    // std::map<uint32_t, uint32_t> flow_id_map;
+    // for(int i = 0; i < 64; i++){
+    //     flow_id_map[0x0100000A + (i << 24)] = 1;
+    // }
+    // feature_extractors.push_back(new BandwidthMonitor(flow_id_map, {1,0}, "BandwidthMonitor_Aggr"));
+    // // feature_extractors.push_back(new StatisticFeatureExtractor());
+    // // feature_extractors.push_back(new NetsentryFeatureExtractor());
 
-    while(true){
+    int packet_count = 1000;
+    while(packet_count--){
         PktInfo pkt_info = traffic_mixer.get_current_pkt_info();
 
-        // std::cout << pkt_info << std::endl;
+        std::cout << pkt_info << std::endl;
         
-        for(auto feature_extractor : feature_extractors){
-            feature_extractor->append_packet(pkt_info);
-            if(feature_extractor->is_ready(pkt_info.flow_id)){
-                feature_extractor->print_feature(pkt_info.flow_id);
-            }
-        }
+        // for(auto feature_extractor : feature_extractors){
+        //     feature_extractor->append_packet(pkt_info);
+        //     if(feature_extractor->is_ready(pkt_info.flow_id)){
+        //         feature_extractor->print_feature(pkt_info.flow_id);
+        //     }
+        // }
 
-        pcap_writer.dump_pkt(pkt_info);
+        pcap_writer.dump_pkt_info(pkt_info);
 
         if(pkt_info.pkt_time.tv_sec > 60){
             break;

@@ -16,6 +16,10 @@ uint32_t DstIpAggrFlowIdentification::get_flow_id(FiveTuple five_tuple){
     }
 }
 
-void DstIpAggrFlowIdentification::print_flow_id(uint32_t flow_id){
-    std::cout << "\"" << flow_id << "\"";
+std::string DstIpAggrFlowIdentification::dump_flow_id(uint32_t flow_id){
+    std::string ret;
+    ret += "\"";
+    ret += std::to_string(flow_id);
+    ret += "\"";
+    return ret;
 }

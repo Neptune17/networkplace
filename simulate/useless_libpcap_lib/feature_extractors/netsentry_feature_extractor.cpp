@@ -10,10 +10,7 @@
 #include "utils.h"
 
 template<typename T>
-NetsentryFeatureExtractor<T>::NetsentryFeatureExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification, size_t dft_sequence_length, size_t dft_feature_length){
-    this->set_name(name);
-    this->set_filter(filter);
-    this->set_flow_identification(flow_identification);
+NetsentryFeatureExtractor<T>::NetsentryFeatureExtractor(size_t dft_sequence_length, size_t dft_feature_length, std::string name, FeatureWriter* writer, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification) : FeatureExtractorTemplate<T>(name, writer, filter, flow_identification){
     dft_sequence_length_ = dft_sequence_length;
     dft_feature_length_ = dft_feature_length;
 }
@@ -80,7 +77,7 @@ void NetsentryFeatureExtractor<T>::append_packet_info_(T flow_id, PktInfo pkt_in
 }
 
 template<typename T>
-void NetsentryFeatureExtractor<T>::print_flow_feature_(T flow_id){
+std::string NetsentryFeatureExtractor<T>::dump_flow_feature_(T flow_id){
     auto feature_array = pkt_features_.get(flow_id);
     
     const char * error = NULL;
@@ -88,10 +85,12 @@ void NetsentryFeatureExtractor<T>::print_flow_feature_(T flow_id){
     std::vector<std::complex<double>> fft_result(dft_sequence_length_);
     ret = simple_fft::FFT(feature_array, fft_result, dft_sequence_length_, error);
     
-    std::cout << "[";
-    for(int i = 0; i < dft_feature_length_ - 1;i ++){std::cout << fft_result[i].real() << "," << fft_result[i].imag() << ",";}
-    std::cout << fft_result[dft_feature_length_ - 1].real() << "," << fft_result[dft_feature_length_ - 1].imag();
-    std::cout << "]";
+    std::string ret_str;
+    ret_str += "[";
+    for(int i = 0; i < dft_feature_length_ - 1;i ++){ret_str += std::to_string(fft_result[i].real()) + "," + std::to_string(fft_result[i].imag()) + ",";}
+    ret_str += std::to_string(fft_result[dft_feature_length_ - 1].real()) + "," + std::to_string(fft_result[dft_feature_length_ - 1].imag());
+    ret_str += "]";
+    return ret_str;
 }
 
 template<typename T>

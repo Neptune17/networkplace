@@ -7,6 +7,7 @@ TrafficGenerator::TrafficGenerator(PktInfo template_pkt_info, timeval start_time
     template_pkt_info_ = template_pkt_info;
     curr_pkt_info_ = template_pkt_info;
     curr_pkt_info_.pkt_time = start_time;
+    stop_time_ = stop_time;
     strategies_ = strategies;
 }
 

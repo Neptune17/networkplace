@@ -6,10 +6,7 @@
 #include "carpet_bombing_extractor_generated_filter.h"
 
 template<typename T>
-CarpetBombingExtractor<T>::CarpetBombingExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification){
-    this->set_name(name);
-    this->set_filter(filter);
-    this->set_flow_identification(flow_identification);
+CarpetBombingExtractor<T>::CarpetBombingExtractor(std::string name, FeatureWriter* writer, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification): FeatureExtractorTemplate<T>(name, writer, filter, flow_identification){
     flow_identification_ = flow_identification;
 }
 
@@ -51,12 +48,14 @@ std::vector<T> CarpetBombingExtractor<T>::get_flow_id_list_(){
 }
 
 template<typename T>
-void CarpetBombingExtractor<T>::print_flow_feature_(T flow_id){
+std::string CarpetBombingExtractor<T>::dump_flow_feature_(T flow_id){
     auto iter = flow_label_.find(flow_id);
+    std::string ret;
     if (iter->second == MALICIOUS)
-        std::cout << "\"MALICIOUS\"";
+        ret += "\"MALICIOUS\"";
     else if (iter->second == MALICIOUS_AND_BENIGN)
-        std::cout << "\"MALICIOUS_AND_BENIGN\"";
+        ret += "\"MALICIOUS_AND_BENIGN\"";
+    return ret;
 }
 
 template<typename T>

@@ -6,7 +6,7 @@
 class DstPortFlowIdendification : public AbstractFlowIdentification<uint16_t>{
   public:
     uint16_t get_flow_id(FiveTuple five_tuple) override;
-    void print_flow_id(uint16_t flow_id) override;
+    std::string dump_flow_id(uint16_t flow_id) override;
 };
 
 #endif

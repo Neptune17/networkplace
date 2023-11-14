@@ -6,7 +6,7 @@
 class SrcIpFlowIdentification : public AbstractFlowIdentification<uint32_t>{
   public:
     uint32_t get_flow_id(FiveTuple five_tuple) override;
-    void print_flow_id(uint32_t flow_id) override;
+    std::string dump_flow_id(uint32_t flow_id) override;
 };
 
 #endif

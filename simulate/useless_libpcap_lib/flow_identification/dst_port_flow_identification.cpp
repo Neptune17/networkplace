@@ -1,11 +1,13 @@
 #include "dst_port_flow_identification.h"
 
-#include <iostream>
-
 uint16_t DstPortFlowIdendification::get_flow_id(FiveTuple five_tuple){
     return five_tuple.dst_port;
 }
 
-void DstPortFlowIdendification::print_flow_id(uint16_t flow_id){
-    std::cout << "\"" << flow_id << "\"";
+std::string DstPortFlowIdendification::dump_flow_id(uint16_t flow_id){
+    std::string ret;
+    ret += "\"";
+    ret += std::to_string(flow_id);
+    ret += "\"";
+    return ret;
 }

@@ -35,10 +35,10 @@ class BandwidthMonitorLogAnalyzer(TemplateLogAnalyzer):
                 self.bandwidth_bps[flow_id] = []
             while len(self.bandwidth_pps[flow_id]) < self.interval_count:
                 self.bandwidth_pps[flow_id].append(0)
-            self.bandwidth_pps[flow_id].append(features[flow_id]['pps'] / self.interval_time)
+            self.bandwidth_pps[flow_id].append(features[flow_id]['p'] / self.interval_time)
             while len(self.bandwidth_bps[flow_id]) < self.interval_count:
                 self.bandwidth_bps[flow_id].append(0)
-            self.bandwidth_bps[flow_id].append(features[flow_id]['bps'] / self.interval_time)
+            self.bandwidth_bps[flow_id].append(features[flow_id]['b'] / self.interval_time)
         self.interval_count += 1
 
     def dump_feature(self):

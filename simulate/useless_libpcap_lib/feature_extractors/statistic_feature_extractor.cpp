@@ -16,10 +16,8 @@ std::ostream& operator<<(std::ostream& os, const StatisticFeature& statistic_fea
 }
 
 template<typename T>
-StatisticFeatureExtractor<T>::StatisticFeatureExtractor(std::string name, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification){
-    this->set_name(name);
-    this->set_filter(filter);
-    this->set_flow_identification(flow_identification);
+StatisticFeatureExtractor<T>::StatisticFeatureExtractor(std::string name, FeatureWriter* writer, AbstractFilter* filter, AbstractFlowIdentification<T>* flow_identification): FeatureExtractorTemplate<T>(name, writer, filter, flow_identification){
+
 }
 
 template<typename T>
@@ -49,10 +47,21 @@ std::vector<T> StatisticFeatureExtractor<T>::get_flow_id_list_(){
 }
 
 template<typename T>
-void StatisticFeatureExtractor<T>::print_flow_feature_(T flow_id){
-    std::cout << "{";
-    std::cout << pkt_features_[flow_id];
-    std::cout << "}";
+std::string StatisticFeatureExtractor<T>::dump_flow_feature_(T flow_id){
+    auto iter = pkt_features_.find(flow_id);
+    std::string ret;
+    ret += "{";
+    ret += "\"total_packet_count:\"" + std::to_string(iter->second.total_packet_count) + ",";
+    ret += "\"total_packet_bytes:\"" + std::to_string(iter->second.total_packet_bytes) + ",";
+    ret += "\"total_squared_packet_length:\"" + std::to_string(iter->second.total_squared_packet_length) + ",";
+    ret += "\"min_packet_length:\"" + std::to_string(iter->second.min_packet_length) + ",";
+    ret += "\"max_packet_length:\"" + std::to_string(iter->second.max_packet_length) + ",";
+    ret += "\"total_inter_packet_time:\"" + std::to_string(iter->second.total_inter_packet_time) + ",";
+    ret += "\"total_squared_inter_packet_time:\"" + std::to_string(iter->second.total_squared_inter_packet_time) + ",";
+    ret += "\"min_inter_packet_time:\"" + std::to_string(iter->second.min_inter_packet_time) + ",";
+    ret += "\"max_inter_packet_time:\"" + std::to_string(iter->second.max_inter_packet_time);
+    ret += "}";
+    return ret;
 }
 
 template<typename T>

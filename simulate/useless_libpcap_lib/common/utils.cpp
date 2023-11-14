@@ -20,7 +20,7 @@ timeval timeval_minus(const timeval &a, const timeval &b){
     timeval ans;
     if (a.tv_usec < b.tv_usec){
         ans.tv_sec = a.tv_sec - b.tv_sec - 1;
-        ans.tv_usec = a.tv_usec + 1000000 - b.tv_usec;
+        ans.tv_usec = a.tv_usec + 1000000000 - b.tv_usec;
     }
     else{
         ans.tv_sec = a.tv_sec - b.tv_sec;
@@ -33,9 +33,9 @@ timeval timeval_plus(const timeval &a, const timeval &b){
     timeval ans;
     ans.tv_sec = a.tv_sec + b.tv_sec;
     ans.tv_usec = a.tv_usec + b.tv_usec;
-    if (ans.tv_usec >= 1000000){
+    if (ans.tv_usec >= 1000000000){
         ans.tv_sec += 1;
-        ans.tv_usec -= 1000000;
+        ans.tv_usec -= 1000000000;
     }
     return ans;
 }

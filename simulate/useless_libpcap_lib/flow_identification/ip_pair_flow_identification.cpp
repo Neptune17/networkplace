@@ -1,7 +1,5 @@
 #include "ip_pair_flow_identification.h"
 
-#include <iostream>
-
 #include "utils.h"
 
 FiveTuple IpPairFlowIdentification::get_flow_id(FiveTuple five_tuple){
@@ -12,10 +10,16 @@ FiveTuple IpPairFlowIdentification::get_flow_id(FiveTuple five_tuple){
     return new_five_tuple;
 }
 
-void IpPairFlowIdentification::print_flow_id(FiveTuple flow_id){
+std::string IpPairFlowIdentification::dump_flow_id(FiveTuple flow_id){
     char src_ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(flow_id.src_ip), src_ip_str, INET_ADDRSTRLEN);
     char dst_ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(flow_id.dst_ip), dst_ip_str, INET_ADDRSTRLEN);
-    std::cout << "\"" << src_ip_str << " " << dst_ip_str << "\"";
+    std::string ret;
+    ret += "\"";
+    ret += src_ip_str;
+    ret += " ";
+    ret += dst_ip_str;
+    ret += "\"";
+    return ret;
 }

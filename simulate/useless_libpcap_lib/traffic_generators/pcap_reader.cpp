@@ -13,7 +13,7 @@ PcapReader::PcapReader(const char *pcap_file_dir, bool enable_payload_hash_check
     enable_original_pkt_ = enable_original_pkt;
 
     char errbuf[PCAP_ERRBUF_SIZE];
-    pcap_descr_ = pcap_open_offline(pcap_file_dir, errbuf);
+    pcap_descr_ = pcap_open_offline_with_tstamp_precision(pcap_file_dir, PCAP_TSTAMP_PRECISION_NANO, errbuf);
     if (pcap_descr_ == NULL) {
         std::cout << "pcap_open_offline()failed:" << errbuf << std::endl;
     }

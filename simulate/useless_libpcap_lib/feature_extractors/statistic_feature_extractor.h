@@ -25,14 +25,14 @@ struct StatisticFeature{
 template<typename T>
 class StatisticFeatureExtractor : public FeatureExtractorTemplate<T>{
   public:
-    StatisticFeatureExtractor(std::string name = std::string("NetsentryFeatureExtractor"), AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstIpFlowIdentification());
+    StatisticFeatureExtractor(std::string name = std::string("NetsentryFeatureExtractor"), FeatureWriter* writer = nullptr, AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstIpFlowIdentification());
 
   private:
     uint32_t get_inter_pkt_time_(T flow_id, timeval new_pkt_time);
     bool is_ready_(T flow_id);
 
     std::vector<T> get_flow_id_list_() override;
-    void print_flow_feature_(T flow_id) override;
+    std::string dump_flow_feature_(T flow_id) override;
     void append_packet_info_(T flow_id, PktInfo pkt_info) override;
     void reset_() override;
 

@@ -12,13 +12,13 @@
 template<typename T>
 class CarpetBombingExtractor: public FeatureExtractorTemplate<T>{
   public:
-    CarpetBombingExtractor(std::string name = std::string("CarpetBombingExtractor"), AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstPortFlowIdendification());
+    CarpetBombingExtractor(std::string name = std::string("CarpetBombingExtractor"), FeatureWriter* writer = nullptr, AbstractFilter* filter = nullptr, AbstractFlowIdentification<T>* flow_identification = new DstPortFlowIdendification());
     
     CarpetBombingExtractorGeneratedFilter<T> get_filter();
 
   private:
     std::vector<T> get_flow_id_list_() override;
-    void print_flow_feature_(T flow_id) override;
+    std::string dump_flow_feature_(T flow_id) override;
     void append_packet_info_(T flow_id, PktInfo pkt_info) override;
     void reset_() override;
 
