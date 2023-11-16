@@ -74,12 +74,13 @@ PktInfo raw_pkt_to_pkt_info(pcap_pkthdr *pkt_header, const u_char *pkt_content, 
         pkt_info.pkt_len = ntohs(ip_header->ip_len);
         pkt_info.pkt_time = pkt_header->ts;
 
+        extra_pkt_info->ip_fragment_status = IP_FRAGMENT_STATUS_NOT_FRAGMENT;
         if ((ip_header->ip_off & IP_MF) && ((ntohs(ip_header->ip_off) & IP_OFFMASK) == 0)){
-            extra_pkt_info->ip_fragment_status = 1;
+            extra_pkt_info->ip_fragment_status = IP_FRAGMENT_STATUS_FIRST_FRAGMENT;
             extra_pkt_info->ip_fragment_id = ntohs(ip_header->ip_id);
         }
         else if ((ntohs(ip_header->ip_off) & IP_OFFMASK) != 0){
-            extra_pkt_info->ip_fragment_status = 2;
+            extra_pkt_info->ip_fragment_status = IP_FRAGMENT_STATUS_FRAGMENT;
             extra_pkt_info->ip_fragment_id = ntohs(ip_header->ip_id);
         }
 
@@ -247,34 +248,100 @@ std::ostream& operator<<(std::ostream& os, const FiveTuple& five_tuple){
     inet_ntop(AF_INET, &(five_tuple.src_ip), src_ip_str, INET_ADDRSTRLEN);
     char dst_ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(five_tuple.dst_ip), dst_ip_str, INET_ADDRSTRLEN);
-    os << src_ip_str << " " << dst_ip_str << " ";
-    os << five_tuple.src_port << " " << five_tuple.dst_port << " ";
+    os << "{";
+    os << "\"sip\":";
+    os << "\"" << src_ip_str << "\"";
+    os << ",";
+    os << "\"dip\":";
+    os << "\"" << dst_ip_str << "\"";
+    os << ",";
+    os << "\"sport\":";
+    os << five_tuple.src_port;
+    os << ",";
+    os << "\"dport\":";
+    os << five_tuple.dst_port;
+    os << ",";
+    os << "\"proto\":";
     os << (uint32_t)five_tuple.proto;
+    os << "}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info){
-    os << pkt_info.pkt_time.tv_sec << " " << pkt_info.pkt_time.tv_usec << " ";
-    os << pkt_info.flow_id << " " << pkt_info.pkt_len << " " << pkt_info.pkt_type;
-    os << " " << pkt_info.pkt_hash;
-    os << " " << pkt_info.payload_hash;
+    os << "{";
+    os << "\"ts\":";
+    os << pkt_info.pkt_time.tv_sec;
+    os << ",";
+    os << "\"tns\":";
+    os << pkt_info.pkt_time.tv_usec;
+    os << ",";
+    os << "\"fid\":";
+    os << pkt_info.flow_id;
+    os << ",";
+    os << "\"len\":";
+    os << pkt_info.pkt_len;
+    os << ",";
+    os << "\"type\":";
+    os << pkt_info.pkt_type;
+    os << ",";
+    os << "\"hash\":";
+    os << pkt_info.pkt_hash;
+    os << ",";
+    os << "\"phash\":";
+    os << pkt_info.payload_hash;
+    os << "}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const PktType& pkt_type){
-    if(pkt_type.tcp)
-        os << "tcp" << " ";
-    if(pkt_type.udp)
-        os << "udp" << " ";
-    if(pkt_type.icmp)
-        os << "icmp" << " ";
-    if(pkt_type.tcp_syn)
-        os << "tcp_syn" << " ";
-    if(pkt_type.tcp_fin)
-        os << "tcp_fin" << " ";
-    if(pkt_type.tcp_rst)
-        os << "tcp_rst" << " ";
-    if(pkt_type.tcp_ack)
-        os << "tcp_ack" << " ";
+    bool first = true;
+    os << "[";
+    if(pkt_type.tcp){
+        os << "\"tcp\"";
+        first = false;
+    }
+    if(pkt_type.udp){
+        if(!first){
+            os << ",";
+        }
+        os << "\"udp\"";
+        first = false;
+    }
+    if(pkt_type.icmp){
+        if(!first){
+            os << ",";
+        }
+        os << "\"icmp\"";
+        first = false;
+    }
+    if(pkt_type.tcp_syn){
+        if(!first){
+            os << ",";
+        }
+        os << "\"tcp_syn\"";
+        first = false;
+    }
+    if(pkt_type.tcp_fin){
+        if(!first){
+            os << ",";
+        }
+        os << "\"tcp_fin\"";
+        first = false;
+    }
+    if(pkt_type.tcp_rst){
+        if(!first){
+            os << ",";
+        }
+        os << "\"tcp_rst\"";
+        first = false;
+    }
+    if(pkt_type.tcp_ack){
+        if(!first){
+            os << ",";
+        }
+        os << "tcp_ack";
+        first = false;
+    }
+    os << "]";
     return os;
 }

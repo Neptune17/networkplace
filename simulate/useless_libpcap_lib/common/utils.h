@@ -57,10 +57,10 @@ struct FiveTuple {
 };
 
 struct PktInfo {
-    FiveTuple flow_id;
-    uint32_t pkt_len;
-    PktType pkt_type;
-    timeval pkt_time;
+    FiveTuple flow_id = FiveTuple();
+    uint32_t pkt_len = 0;
+    PktType pkt_type = PktType();
+    timeval pkt_time = {0, 0};
     int64_t pkt_hash = -1;
     int64_t payload_hash = -1;
     
@@ -77,6 +77,9 @@ struct PktInfo {
     friend std::ostream& operator<<(std::ostream& os, const PktInfo& pkt_info);
 };
 
+#define IP_FRAGMENT_STATUS_NOT_FRAGMENT 0
+#define IP_FRAGMENT_STATUS_FIRST_FRAGMENT 1
+#define IP_FRAGMENT_STATUS_FRAGMENT 2
 struct ExtraPktInfo {
     uint16_t ip_fragment_status;
     uint16_t ip_fragment_id;

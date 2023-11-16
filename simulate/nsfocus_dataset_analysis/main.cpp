@@ -7,6 +7,7 @@
 #include "pcap_writer.h"
 #include "bandwidth_monitor.h"
 #include "statistic_feature_extractor.h"
+#include "dummy_feature_extractor.h"
 #include "dst_ip_filter.h"
 #include "src_ip_filter.h"
 #include "dst_port_filter.h"
@@ -15,9 +16,11 @@
 #include "or_filter.h"
 #include "not_filter.h"
 #include "five_tuple_filter.h"
+#include "dummy_flow_identification.h"
 #include "dst_ip_flow_identification.h"
 #include "src_ip_flow_identification.h"
 #include "five_tuple_flow_identification.h"
+#include "dst_ip_aggr_to_C_flow_identification.h"
 #include "ip_pair_flow_identification.h"
 #include "carpet_bombing_extractor.h"
 #include "feature_writer.h"
@@ -30,7 +33,7 @@ int main(){
     // // packets with a payload hash that occurs more than once
     // // handcrafted filters by checking seperate pcap files
 
-    bool dump_seperate_pcap = false;
+    bool dump_seperate_pcap = true;
     std::vector<std::string> orginial_pcap_filenames = {
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_385a_6_2023-03-19_19-58-12.cap",
         "/root/networkplace/simulate/nsfocus_dataset_analysis/nsfocus/collcap_adbos_f0cf_46_2023-03-15_23-56-38.cap",
@@ -125,23 +128,41 @@ int main(){
 
     for(auto filename : clean_pcap_filenames){
         std::cout << filename << std::endl;
-        PcapReader pcap_reader(filename.c_str());
+        PcapReader pcap_reader(filename.c_str(), true, true, true);
         FeatureWriter feature_writer(std::string("result/") + filename.substr(filename.find_last_of('/') + 1).c_str() + ".log");
+        PcapWriter pcap_writer(("result/189" + filename.substr(filename.find_last_of('/') + 1)).c_str(), 65536);
+        DstIpFilter writer_filter("189.1.60.0",24);
+        FeatureWriter feature_writer_dummy(std::string("result/") + filename.substr(filename.find_last_of('/') + 1).c_str() + "dummy.log");
 
-        //DST IP
+        DummyFeatureExtractor<uint16_t> dummy_feature_extractor = DummyFeatureExtractor<uint16_t>(std::string("DummyFeatureExtractor"), &feature_writer_dummy, nullptr, new DummyFlowIdentification());
+
+        // DST IP
         BandwidthMonitor<uint32_t> bandwidth_monitor_dst = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorDstIp"), &feature_writer, nullptr, new DstIpFlowIdentification());
         // SRC IP
         BandwidthMonitor<uint32_t> bandwidth_monitor_src = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorSrcIp"), &feature_writer, nullptr, new SrcIpFlowIdentification());
-        // // five tuple
-        // BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorFiveTuple"), &feature_writer, nullptr, new FiveTupleFlowIdentification());
+        // five tuple
+        BandwidthMonitor<FiveTuple> bandwidth_monitor_fivetuple = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorFiveTuple"), &feature_writer, nullptr, new FiveTupleFlowIdentification());
         // ip pair
         BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorIpPair"), &feature_writer, nullptr, new IpPairFlowIdentification());
+        // DST IP C
+        BandwidthMonitor<uint32_t> bandwidth_monitor_dst_c = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorDstIpC"), &feature_writer, nullptr, new DstIpAggrToCFlowIdentification());
+
+        // 189.1.60.0/24
+        BandwidthMonitor<FiveTuple> bandwidth_monitor_ippair_189_1_60 = BandwidthMonitor<FiveTuple>({0,10000000}, std::string("BandwidthMonitorIpPair189_1_60"), &feature_writer, new DstIpFilter("189.1.60.0",24), new IpPairFlowIdentification());
+        BandwidthMonitor<uint32_t> bandwidth_monitor_dst_189_1_60 = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorDst189_1_60"), &feature_writer, new DstIpFilter("189.1.60.0",24), new DstIpFlowIdentification());
+        BandwidthMonitor<uint32_t> bandwidth_monitor_src_189_1_60 = BandwidthMonitor<uint32_t>({0,10000000}, std::string("BandwidthMonitorSrc189_1_60"), &feature_writer, new DstIpFilter("189.1.60.0",24), new SrcIpFlowIdentification());
+
 
         std::vector<AbstractFeatureExtractor*> feature_extractors;
         feature_extractors.push_back(&bandwidth_monitor_dst);
         feature_extractors.push_back(&bandwidth_monitor_src);
-        // feature_extractors.push_back(&bandwidth_monitor_fivetuple);
+        feature_extractors.push_back(&bandwidth_monitor_fivetuple);
         feature_extractors.push_back(&bandwidth_monitor_ippair);
+        feature_extractors.push_back(&bandwidth_monitor_dst_c);
+        feature_extractors.push_back(&bandwidth_monitor_ippair_189_1_60);
+        feature_extractors.push_back(&bandwidth_monitor_dst_189_1_60);
+        feature_extractors.push_back(&bandwidth_monitor_src_189_1_60);
+        feature_extractors.push_back(&dummy_feature_extractor);
 
         while(true){
             PktInfo pkt_info = pcap_reader.get_current_pkt_info();
@@ -150,6 +171,13 @@ int main(){
 
             for(auto feature_extractor : feature_extractors){
                 feature_extractor->append_packet(pkt_info);
+            }
+
+            if(writer_filter.accept(pkt_info)){
+                u_char pkt_content[10000] = {};
+                pcap_pkthdr pkt_header = pcap_pkthdr();
+                pcap_reader.get_curr_original_pkt(pkt_content, &pkt_header);
+                pcap_writer.dump_original_pkt(pkt_content, &pkt_header);
             }
 
             pcap_reader.generate_next();

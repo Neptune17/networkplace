@@ -38,6 +38,7 @@ class StatisticFeatureExtractor : public FeatureExtractorTemplate<T>{
 
     std::map<T, StatisticFeature> pkt_features_;
     std::map<T, uint32_t> last_pkt_time_;
+    std::ostringstream
 };
 
 #endif

@@ -41,17 +41,41 @@ for nickname in log_file_nickname_and_name:
             "fig_dir_bps" : "result/fig/" + nickname + "_bps_src_ip.png",
             "fig_dir_pps" : "result/fig/" + nickname + "_pps_src_ip.png",
         },
-        # "BandwidthMonitorFiveTuple": {
-        #     "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_five_tuple",
-        #     "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_five_tuple",
-        #     "fig_dir_bps" : "result/fig/" + nickname + "_bps_five_tuple.png",
-        #     "fig_dir_pps" : "result/fig/" + nickname + "_pps_five_tuple.png",
-        # },
+        "BandwidthMonitorFiveTuple": {
+            "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_five_tuple",
+            "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_five_tuple",
+            "fig_dir_bps" : "result/fig/" + nickname + "_bps_five_tuple.png",
+            "fig_dir_pps" : "result/fig/" + nickname + "_pps_five_tuple.png",
+        },
         "BandwidthMonitorIpPair": {
             "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_ip_pair",
             "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_ip_pair",
             "fig_dir_bps" : "result/fig/" + nickname + "_bps_ip_pair.png",
             "fig_dir_pps" : "result/fig/" + nickname + "_pps_ip_pair.png",
+        },
+        "BandwidthMonitorDstIpC": {
+            "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_dst_ip_c",
+            "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_dst_ip_c",
+            "fig_dir_bps" : "result/fig/" + nickname + "_bps_dst_ip_c.png",
+            "fig_dir_pps" : "result/fig/" + nickname + "_pps_dst_ip_c.png",
+        },
+        "BandwidthMonitorIpPair189_1_60": {
+            "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_ip_pair189_1_60",
+            "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_ip_pair189_1_60",
+            "fig_dir_bps" : "result/fig/" + nickname + "_bps_ip_pair189_1_60.png",
+            "fig_dir_pps" : "result/fig/" + nickname + "_pps_ip_pair189_1_60.png",
+        },
+        "BandwidthMonitorDst189_1_60": {
+            "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_dst189_1_60",
+            "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_dst189_1_60",
+            "fig_dir_bps" : "result/fig/" + nickname + "_bps_dst189_1_60.png",
+            "fig_dir_pps" : "result/fig/" + nickname + "_pps_dst189_1_60.png",
+        },
+        "BandwidthMonitorSrc189_1_60": {
+            "dump_dir_bps" : "result/pickle_dump/" + nickname + "_bps_src189_1_60",
+            "dump_dir_pps" : "result/pickle_dump/" + nickname + "_pps_src189_1_60",
+            "fig_dir_bps" : "result/fig/" + nickname + "_bps_src189_1_60.png",
+            "fig_dir_pps" : "result/fig/" + nickname + "_pps_src189_1_60.png",
         },
     }
 
@@ -60,35 +84,36 @@ for nickname in log_file_nickname_and_name:
 
     feature_log_analyze_manager.run()
 
-    for config_name in configs.keys():
-        bandwidth_bps = pickle.load(open(configs[config_name]["dump_dir_bps"], "rb"))
-        bandwidth_pps = pickle.load(open(configs[config_name]["dump_dir_pps"], "rb"))
-        x_bps = bandwidth_bps["x"]
-        x_pps = bandwidth_pps["x"]
-        del bandwidth_bps["x"]
-        del bandwidth_pps["x"]
-        flow_id_list = bandwidth_bps.keys()
+    # # plot bandwidth
+    # for config_name in configs.keys():
+    #     bandwidth_bps = pickle.load(open(configs[config_name]["dump_dir_bps"], "rb"))
+    #     bandwidth_pps = pickle.load(open(configs[config_name]["dump_dir_pps"], "rb"))
+    #     x_bps = bandwidth_bps["x"]
+    #     x_pps = bandwidth_pps["x"]
+    #     del bandwidth_bps["x"]
+    #     del bandwidth_pps["x"]
+    #     flow_id_list = bandwidth_bps.keys()
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlabel('time (s)')
-        ax.set_ylabel('bandwidth (mbps)')
-        ax.set_title('bandwidth')
-        ax.grid(True)
-        for flow_id in flow_id_list:
-            y_bps = [(bandwidth_bps[flow_id][i] / 1000000) for i in range(len(bandwidth_bps[flow_id]))]
-            ax.plot(x_bps, y_bps, label='flow_id='+str(flow_id))
-        plt.savefig(configs[config_name]["fig_dir_bps"])
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111)
+    #     ax.set_xlabel('time (s)')
+    #     ax.set_ylabel('bandwidth (mbps)')
+    #     ax.set_title('bandwidth')
+    #     ax.grid(True)
+    #     for flow_id in flow_id_list:
+    #         y_bps = [(bandwidth_bps[flow_id][i] / 1000000) for i in range(len(bandwidth_bps[flow_id]))]
+    #         ax.plot(x_bps, y_bps, label='flow_id='+str(flow_id))
+    #     plt.savefig(configs[config_name]["fig_dir_bps"])
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlabel('time (s)')
-        ax.set_ylabel('bandwidth (pps)')
-        ax.set_title('bandwidth')
-        ax.grid(True)
-        for flow_id in flow_id_list:
-            ax.plot(x_pps, bandwidth_pps[flow_id], label='flow_id='+str(flow_id))
-        plt.savefig(configs[config_name]["fig_dir_pps"])
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111)
+    #     ax.set_xlabel('time (s)')
+    #     ax.set_ylabel('bandwidth (pps)')
+    #     ax.set_title('bandwidth')
+    #     ax.grid(True)
+    #     for flow_id in flow_id_list:
+    #         ax.plot(x_pps, bandwidth_pps[flow_id], label='flow_id='+str(flow_id))
+    #     plt.savefig(configs[config_name]["fig_dir_pps"])
 
     # # check if five tuple and ip pair is the same (checked, five tuple and ip pair is the same)
     # five_tuple_bandwidth_pps = pickle.load(open(configs["BandwidthMonitorFiveTuple"]["dump_dir_pps"], "rb"))
@@ -120,6 +145,262 @@ for nickname in log_file_nickname_and_name:
     #         not_same_counter += ip_pair_packet_count[ip_pair_str]
     # print("same_counter", same_counter)
     # print("not_same_counter", not_same_counter)
+
+    # check if src_ip and dst_port is the same
+    five_tuple_bandwidth_pps = pickle.load(open(configs["BandwidthMonitorFiveTuple"]["dump_dir_pps"], "rb"))
+    del five_tuple_bandwidth_pps["x"]
+    ip_port = {}
+    for five_tuple_str in five_tuple_bandwidth_pps.keys():
+        src_ip = five_tuple_str.split(" ")[1]
+        dst_port = five_tuple_str.split(" ")[3]
+        if src_ip not in ip_port.keys():
+            ip_port[src_ip] = dst_port
+        elif ip_port[src_ip] != dst_port:
+            print("not same")
+            print(src_ip, ip_port[src_ip], dst_port)
+
+    if nickname == "385a":
+        print()
+        print("385a analysis")
+        print("check the ratio of attack targeting 189.1.60.0/24")
+        bandwidth_bps = pickle.load(open(configs["BandwidthMonitorDstIp"]["dump_dir_bps"], "rb"))
+        bandwidth_pps = pickle.load(open(configs["BandwidthMonitorDstIp"]["dump_dir_pps"], "rb"))
+        del bandwidth_bps["x"]
+        del bandwidth_pps["x"]
+        bandwidth_bps_189_1_60 = 0
+        bandwidth_pps_189_1_60 = 0
+        bandwidth_bps_all = 0
+        bandwidth_pps_all = 0
+        for flow_id in bandwidth_pps.keys():
+            if flow_id.startswith("189.1.60"):
+                bandwidth_bps_189_1_60 += np.sum(bandwidth_bps[flow_id])
+                bandwidth_pps_189_1_60 += np.sum(bandwidth_pps[flow_id])
+            bandwidth_bps_all += np.sum(bandwidth_bps[flow_id])
+            bandwidth_pps_all += np.sum(bandwidth_pps[flow_id])
+        print("ratio of bandwidth_bps_189_1_60", bandwidth_bps_189_1_60 / bandwidth_bps_all)
+        print("ratio of bandwidth_pps_189_1_60", bandwidth_pps_189_1_60 / bandwidth_pps_all)
+
+
+        print("rate of carpet bombing targeting 189.1.60.0/24")
+
+        bandwidth_bps = pickle.load(open(configs["BandwidthMonitorDst189_1_60"]["dump_dir_bps"], "rb"))
+        bandwidth_pps = pickle.load(open(configs["BandwidthMonitorDst189_1_60"]["dump_dir_pps"], "rb"))
+        del bandwidth_bps["x"]
+        del bandwidth_pps["x"]
+        bandwidth_bps_189_1_60 = 0
+        bandwidth_pps_189_1_60 = 0
+        for flow_id in bandwidth_pps.keys():
+            start_loc = 0
+            for i in range(len(bandwidth_pps[flow_id])):
+                if bandwidth_pps[flow_id][i] > 0:
+                    start_loc = i
+                    break
+            avg_pps = np.mean(bandwidth_pps[flow_id][start_loc:])
+            avg_bps = np.mean(bandwidth_bps[flow_id][start_loc:])
+            # print(flow_id, avg_bps / 1000000, avg_pps)
+            bandwidth_bps_189_1_60 += avg_bps
+            bandwidth_pps_189_1_60 += avg_pps
+        print("overall bps of carpet bombing targeting 189.1.60.0/24", bandwidth_bps_189_1_60 / 1000000)
+        print("overall pps of carpet bombing targeting 189.1.60.0/24", bandwidth_pps_189_1_60 / 1000000)
+
+        for config_name in ["BandwidthMonitorSrc189_1_60", "BandwidthMonitorDst189_1_60", "BandwidthMonitorIpPair189_1_60"]:
+            print(config_name)
+            max_pps = 0
+            max_bps = 0
+            min_pps = 100000000
+            min_bps = 100000000
+            avg_pps = 0
+            avg_bps = 0
+            bandwidth_bps = pickle.load(open(configs[config_name]["dump_dir_bps"], "rb"))
+            bandwidth_pps = pickle.load(open(configs[config_name]["dump_dir_pps"], "rb"))
+            del bandwidth_bps["x"]
+            del bandwidth_pps["x"]
+            for flow_id in bandwidth_pps.keys():
+                start_loc = 0
+                for i in range(len(bandwidth_pps[flow_id])):
+                    if bandwidth_pps[flow_id][i] > 0:
+                        start_loc = i
+                        break
+                flow_avg_pps = np.mean(bandwidth_pps[flow_id][start_loc:])
+                flow_avg_bps = np.mean(bandwidth_bps[flow_id][start_loc:])
+                # print(flow_id, avg_bps / 1000000, avg_pps)
+                if flow_avg_pps > max_pps:
+                    max_pps = flow_avg_pps
+                if flow_avg_pps < min_pps:
+                    min_pps = flow_avg_pps
+                if flow_avg_bps > max_bps:
+                    max_bps = flow_avg_bps
+                if flow_avg_bps < min_bps:
+                    min_bps = flow_avg_bps
+                avg_pps += flow_avg_pps
+                avg_bps += flow_avg_bps
+            
+            avg_pps /= len(bandwidth_pps.keys())
+            avg_bps /= len(bandwidth_pps.keys())
+            
+            print("max_pps", max_pps)
+            print("min_pps", min_pps)
+            print("avg_pps", avg_pps)
+            print("max_bps", max_bps / 1000000)
+            print("min_bps", min_bps / 1000000)
+            print("avg_bps", avg_bps / 1000000)
+
+        print("in and out degree of carpet bombing targeting 189.1.60.0/24")
+        bandwidth_bps = pickle.load(open(configs["BandwidthMonitorIpPair189_1_60"]["dump_dir_bps"], "rb"))
+        bandwidth_pps = pickle.load(open(configs["BandwidthMonitorIpPair189_1_60"]["dump_dir_pps"], "rb"))
+        del bandwidth_bps["x"]
+        del bandwidth_pps["x"]
+        src_ip_dict = {}
+        dst_ip_dict = {}
+        for flow_id in bandwidth_pps.keys():
+            src_ip = flow_id.split(" ")[0]
+            dst_ip = flow_id.split(" ")[1]
+            if src_ip not in src_ip_dict.keys():
+                src_ip_dict[src_ip] = set()
+            src_ip_dict[src_ip].add(dst_ip)
+            if dst_ip not in dst_ip_dict.keys():
+                dst_ip_dict[dst_ip] = set()
+            dst_ip_dict[dst_ip].add(src_ip)
+        avg_src_ip_num_per_dst_ip = 0
+        min_src_ip_num_per_dst_ip = 100000000
+        max_src_ip_num_per_dst_ip = 0
+        for dst_ip in dst_ip_dict.keys():
+            avg_src_ip_num_per_dst_ip += len(dst_ip_dict[dst_ip])
+            if len(dst_ip_dict[dst_ip]) < min_src_ip_num_per_dst_ip:
+                min_src_ip_num_per_dst_ip = len(dst_ip_dict[dst_ip])
+            if len(dst_ip_dict[dst_ip]) > max_src_ip_num_per_dst_ip:
+                max_src_ip_num_per_dst_ip = len(dst_ip_dict[dst_ip])
+        avg_src_ip_num_per_dst_ip /= len(dst_ip_dict.keys())
+        print("avg_src_ip_num_per_dst_ip", avg_src_ip_num_per_dst_ip)
+        print("min_src_ip_num_per_dst_ip", min_src_ip_num_per_dst_ip)
+        print("max_src_ip_num_per_dst_ip", max_src_ip_num_per_dst_ip)
+        avg_dst_ip_num_per_src_ip = 0
+        min_dst_ip_num_per_src_ip = 100000000
+        max_dst_ip_num_per_src_ip = 0
+        for src_ip in src_ip_dict.keys():
+            avg_dst_ip_num_per_src_ip += len(src_ip_dict[src_ip])
+            if len(src_ip_dict[src_ip]) < min_dst_ip_num_per_src_ip:
+                min_dst_ip_num_per_src_ip = len(src_ip_dict[src_ip])
+            if len(src_ip_dict[src_ip]) > max_dst_ip_num_per_src_ip:
+                max_dst_ip_num_per_src_ip = len(src_ip_dict[src_ip])
+        avg_dst_ip_num_per_src_ip /= len(src_ip_dict.keys())
+        print("avg_dst_ip_num_per_src_ip", avg_dst_ip_num_per_src_ip)
+        print("min_dst_ip_num_per_src_ip", min_dst_ip_num_per_src_ip)
+        print("max_dst_ip_num_per_src_ip", max_dst_ip_num_per_src_ip)
+
+        print()
+
+    if nickname == "f0cf":
+        print()
+        print("f0cf analysis")
+        print("rate of carpet bombing")
+
+        bandwidth_bps = pickle.load(open(configs["BandwidthMonitorDstIp"]["dump_dir_bps"], "rb"))
+        bandwidth_pps = pickle.load(open(configs["BandwidthMonitorDstIp"]["dump_dir_pps"], "rb"))
+        del bandwidth_bps["x"]
+        del bandwidth_pps["x"]
+        bandwidth_bps_all = 0
+        bandwidth_pps_all = 0
+        for flow_id in bandwidth_pps.keys():
+            start_loc = 0
+            for i in range(len(bandwidth_pps[flow_id])):
+                if bandwidth_pps[flow_id][i] > 0:
+                    start_loc = i
+                    break
+            avg_pps = np.mean(bandwidth_pps[flow_id][start_loc:])
+            avg_bps = np.mean(bandwidth_bps[flow_id][start_loc:])
+            # print(flow_id, avg_bps / 1000000, avg_pps)
+            bandwidth_bps_all += avg_bps
+            bandwidth_pps_all += avg_pps
+        print("overall bps of carpet bombing", bandwidth_bps_all / 1000000)
+        print("overall pps of carpet bombing", bandwidth_pps_all / 1000000)
+
+        for config_name in ["BandwidthMonitorSrcIp", "BandwidthMonitorDstIp", "BandwidthMonitorIpPair"]:
+            print(config_name)
+            max_pps = 0
+            max_bps = 0
+            min_pps = 100000000
+            min_bps = 100000000
+            avg_pps = 0
+            avg_bps = 0
+            bandwidth_bps = pickle.load(open(configs[config_name]["dump_dir_bps"], "rb"))
+            bandwidth_pps = pickle.load(open(configs[config_name]["dump_dir_pps"], "rb"))
+            del bandwidth_bps["x"]
+            del bandwidth_pps["x"]
+            for flow_id in bandwidth_pps.keys():
+                start_loc = 0
+                for i in range(len(bandwidth_pps[flow_id])):
+                    if bandwidth_pps[flow_id][i] > 0:
+                        start_loc = i
+                        break
+                flow_avg_pps = np.mean(bandwidth_pps[flow_id][start_loc:])
+                flow_avg_bps = np.mean(bandwidth_bps[flow_id][start_loc:])
+                # print(flow_id, avg_bps / 1000000, avg_pps)
+                if flow_avg_pps > max_pps:
+                    max_pps = flow_avg_pps
+                if flow_avg_pps < min_pps:
+                    min_pps = flow_avg_pps
+                if flow_avg_bps > max_bps:
+                    max_bps = flow_avg_bps
+                if flow_avg_bps < min_bps:
+                    min_bps = flow_avg_bps
+                avg_pps += flow_avg_pps
+                avg_bps += flow_avg_bps
+            
+            avg_pps /= len(bandwidth_pps.keys())
+            avg_bps /= len(bandwidth_pps.keys())
+            
+            print("max_pps", max_pps)
+            print("min_pps", min_pps)
+            print("avg_pps", avg_pps)
+            print("max_bps", max_bps / 1000000)
+            print("min_bps", min_bps / 1000000)
+            print("avg_bps", avg_bps / 1000000)
+
+        print("in and out degree of carpet bombing")
+        bandwidth_bps = pickle.load(open(configs["BandwidthMonitorIpPair"]["dump_dir_bps"], "rb"))
+        bandwidth_pps = pickle.load(open(configs["BandwidthMonitorIpPair"]["dump_dir_pps"], "rb"))
+        del bandwidth_bps["x"]
+        del bandwidth_pps["x"]
+        src_ip_dict = {}
+        dst_ip_dict = {}
+        for flow_id in bandwidth_pps.keys():
+            src_ip = flow_id.split(" ")[0]
+            dst_ip = flow_id.split(" ")[1]
+            if src_ip not in src_ip_dict.keys():
+                src_ip_dict[src_ip] = set()
+            src_ip_dict[src_ip].add(dst_ip)
+            if dst_ip not in dst_ip_dict.keys():
+                dst_ip_dict[dst_ip] = set()
+            dst_ip_dict[dst_ip].add(src_ip)
+        avg_src_ip_num_per_dst_ip = 0
+        min_src_ip_num_per_dst_ip = 100000000
+        max_src_ip_num_per_dst_ip = 0
+        for dst_ip in dst_ip_dict.keys():
+            avg_src_ip_num_per_dst_ip += len(dst_ip_dict[dst_ip])
+            if len(dst_ip_dict[dst_ip]) < min_src_ip_num_per_dst_ip:
+                min_src_ip_num_per_dst_ip = len(dst_ip_dict[dst_ip])
+            if len(dst_ip_dict[dst_ip]) > max_src_ip_num_per_dst_ip:
+                max_src_ip_num_per_dst_ip = len(dst_ip_dict[dst_ip])
+        avg_src_ip_num_per_dst_ip /= len(dst_ip_dict.keys())
+        print("avg_src_ip_num_per_dst_ip", avg_src_ip_num_per_dst_ip)
+        print("min_src_ip_num_per_dst_ip", min_src_ip_num_per_dst_ip)
+        print("max_src_ip_num_per_dst_ip", max_src_ip_num_per_dst_ip)
+        avg_dst_ip_num_per_src_ip = 0
+        min_dst_ip_num_per_src_ip = 100000000
+        max_dst_ip_num_per_src_ip = 0
+        for src_ip in src_ip_dict.keys():
+            avg_dst_ip_num_per_src_ip += len(src_ip_dict[src_ip])
+            if len(src_ip_dict[src_ip]) < min_dst_ip_num_per_src_ip:
+                min_dst_ip_num_per_src_ip = len(src_ip_dict[src_ip])
+            if len(src_ip_dict[src_ip]) > max_dst_ip_num_per_src_ip:
+                max_dst_ip_num_per_src_ip = len(src_ip_dict[src_ip])
+        avg_dst_ip_num_per_src_ip /= len(src_ip_dict.keys())
+        print("avg_dst_ip_num_per_src_ip", avg_dst_ip_num_per_src_ip)
+        print("min_dst_ip_num_per_src_ip", min_dst_ip_num_per_src_ip)
+        print("max_dst_ip_num_per_src_ip", max_dst_ip_num_per_src_ip)
+
+
 
 
     # print(config_name)

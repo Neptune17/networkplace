@@ -1,10 +1,10 @@
-INCLUDE = -I ../common
+INCLUDE = -I ../common -I ../filters
 
 SRC = $(wildcard *.cpp)
 OBJS = $(addprefix $(ROOT_DIR)/$(OBJS_DIR)/,$(patsubst %.cpp,%.o,$(notdir $(SRC))))
 DEPS = $(addprefix $(ROOT_DIR)/$(DEPS_DIR)/,$(patsubst %.cpp,%.d,$(notdir $(SRC))))
 
-vpath %.h ../common
+vpath %.h ../common ../filters
 
 all: $(OBJS)
 	echo $^ > objs.txt

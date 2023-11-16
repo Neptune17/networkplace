@@ -21,10 +21,6 @@ class FeatureExtractorTemplate: public AbstractFeatureExtractor{
     void reset() override;
   
   protected:
-    // void set_name(std::string name);
-    // void set_writer(FeatureWriter* writer);
-    // void set_filter(AbstractFilter* filter);
-    // void set_flow_identification(AbstractFlowIdentification<T>* flow_identification);
     void print_flow_feature(FiveTuple five_tuple);
   
   private:
